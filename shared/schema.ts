@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, decimal, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -7,6 +7,11 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  isAdmin: boolean("is_admin").default(false).notNull(),
+  usdtBalance: decimal("usdt_balance", { precision: 18, scale: 8 }).default("0").notNull(),
+  rtcBalance: decimal("rtc_balance", { precision: 18, scale: 2 }).default("0").notNull(),
+  referralCode: text("referral_code").unique(),
+  depositAmount: decimal("deposit_amount", { precision: 18, scale: 8 }).default("0").notNull(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -16,3 +21,60 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+export const deposits = pgTable("deposits", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  amount: decimal("amount", { precision: 18, scale: 8 }).notNull(),
+  status: text("status").notNull().default("pending"),
+  txHash: text("tx_hash"),
+  network: text("network").default("TRC20").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  confirmedAt: timestamp("confirmed_at"),
+});
+
+export const insertDepositSchema = createInsertSchema(deposits).omit({
+  id: true,
+  createdAt: true,
+  confirmedAt: true,
+});
+
+export type InsertDeposit = z.infer<typeof insertDepositSchema>;
+export type Deposit = typeof deposits.$inferSelect;
+
+export const withdrawals = pgTable("withdrawals", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  amount: decimal("amount", { precision: 18, scale: 8 }).notNull(),
+  address: text("address").notNull(),
+  status: text("status").notNull().default("pending"),
+  txHash: text("tx_hash"),
+  network: text("network").default("TRC20").notNull(),
+  fee: decimal("fee", { precision: 18, scale: 8 }).default("0.5").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  processedAt: timestamp("processed_at"),
+});
+
+export const insertWithdrawalSchema = createInsertSchema(withdrawals).omit({
+  id: true,
+  createdAt: true,
+  processedAt: true,
+});
+
+export type InsertWithdrawal = z.infer<typeof insertWithdrawalSchema>;
+export type Withdrawal = typeof withdrawals.$inferSelect;
+
+export const systemSettings = pgTable("system_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: text("key").notNull().unique(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertSystemSettingSchema = createInsertSchema(systemSettings).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export type InsertSystemSetting = z.infer<typeof insertSystemSettingSchema>;
+export type SystemSetting = typeof systemSettings.$inferSelect;
