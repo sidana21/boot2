@@ -10,6 +10,7 @@ import Home from "@/pages/Home";
 import Transactions from "@/pages/Transactions";
 import Referrals from "@/pages/Referrals";
 import Wallet from "@/pages/Wallet";
+import Admin from "@/pages/Admin";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/transactions" component={Transactions} />
       <Route path="/referrals" component={Referrals} />
       <Route path="/wallet" component={Wallet} />
+      <Route path="/admin" component={Admin} />
       <Route component={NotFound} />
     </Switch>
   );
