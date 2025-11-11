@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ThemeToggle from "@/components/ThemeToggle";
 import { Link } from "wouter";
+import rtcLogo from "@assets/1762901598272_1762903589759.jpg";
 
 interface AppHeaderProps {
   onMenuClick?: () => void;
@@ -25,9 +26,12 @@ export default function AppHeader({ onMenuClick, notificationCount = 0, balance,
             <Menu className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center pulse-soft">
-              <Wallet className="w-5 h-5 text-primary-foreground" />
-            </div>
+            <img 
+              src={rtcLogo} 
+              alt="RTC Coin" 
+              className="w-10 h-10 pulse-soft"
+              data-testid="img-rtc-logo"
+            />
             <h1 className="text-xl font-bold">تطبيق التكبيس</h1>
           </div>
         </div>
