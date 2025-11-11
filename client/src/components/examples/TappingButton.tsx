@@ -14,7 +14,8 @@ export default function TappingButtonExample() {
       currentTaps={taps} 
       maxTaps={100} 
       onTap={handleTap}
-      earnedToday={4.50}
+      earnedRTC={450}
+      earnedUSDT={4.50}
     />
   );
 }

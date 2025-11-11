@@ -18,28 +18,28 @@
   --sidebar: 0 0% 96%;
   --sidebar-foreground: 0 0% 9%;
   --sidebar-border: 0 0% 91%;
-  --sidebar-primary: 153 100% 35%;
-  --sidebar-primary-foreground: 153 100% 98%;
+  --sidebar-primary: 160 84% 39%;
+  --sidebar-primary-foreground: 160 84% 98%;
   --sidebar-accent: 0 0% 92%;
   --sidebar-accent-foreground: 0 0% 9%;
-  --sidebar-ring: 153 100% 35%;
+  --sidebar-ring: 160 84% 39%;
   --popover: 0 0% 95%;
   --popover-foreground: 0 0% 9%;
   --popover-border: 0 0% 90%;
-  --primary: 153 100% 35%;
-  --primary-foreground: 153 100% 98%;
-  --secondary: 0 0% 90%;
-  --secondary-foreground: 0 0% 9%;
+  --primary: 160 84% 39%;
+  --primary-foreground: 160 84% 98%;
+  --secondary: 280 67% 55%;
+  --secondary-foreground: 280 67% 98%;
   --muted: 0 0% 93%;
   --muted-foreground: 0 0% 40%;
-  --accent: 45 95% 55%;
-  --accent-foreground: 45 95% 15%;
+  --accent: 35 100% 50%;
+  --accent-foreground: 35 100% 10%;
   --destructive: 0 84% 42%;
   --destructive-foreground: 0 84% 98%;
   --input: 0 0% 78%;
-  --ring: 153 100% 35%;
-  --chart-1: 153 100% 35%;
-  --chart-2: 45 95% 55%;
+  --ring: 160 84% 39%;
+  --chart-1: 160 84% 39%;
+  --chart-2: 35 100% 50%;
   --chart-3: 197 92% 38%;
   --chart-4: 27 87% 48%;
   --chart-5: 280 67% 42%;
@@ -102,28 +102,28 @@
   --sidebar: 0 0% 11%;
   --sidebar-foreground: 0 0% 98%;
   --sidebar-border: 0 0% 14%;
-  --sidebar-primary: 153 100% 40%;
-  --sidebar-primary-foreground: 153 100% 98%;
+  --sidebar-primary: 160 84% 45%;
+  --sidebar-primary-foreground: 160 84% 98%;
   --sidebar-accent: 0 0% 14%;
   --sidebar-accent-foreground: 0 0% 98%;
-  --sidebar-ring: 153 100% 40%;
+  --sidebar-ring: 160 84% 45%;
   --popover: 0 0% 13%;
   --popover-foreground: 0 0% 98%;
   --popover-border: 0 0% 16%;
-  --primary: 153 100% 40%;
-  --primary-foreground: 153 100% 98%;
-  --secondary: 0 0% 16%;
-  --secondary-foreground: 0 0% 98%;
+  --primary: 160 84% 45%;
+  --primary-foreground: 160 84% 98%;
+  --secondary: 280 67% 60%;
+  --secondary-foreground: 280 67% 98%;
   --muted: 0 0% 15%;
   --muted-foreground: 0 0% 65%;
-  --accent: 45 95% 60%;
-  --accent-foreground: 45 95% 15%;
+  --accent: 35 100% 55%;
+  --accent-foreground: 35 100% 10%;
   --destructive: 0 84% 35%;
   --destructive-foreground: 0 84% 98%;
   --input: 0 0% 25%;
-  --ring: 153 100% 40%;
-  --chart-1: 153 100% 62%;
-  --chart-2: 45 95% 68%;
+  --ring: 160 84% 45%;
+  --chart-1: 160 84% 62%;
+  --chart-2: 35 100% 60%;
   --chart-3: 197 92% 68%;
   --chart-4: 27 87% 68%;
   --chart-5: 280 67% 68%;
@@ -196,6 +196,34 @@
  * need to be distinguished from eachother visually.
  */
 @layer utilities {
+  /* Pulsing animation for buttons */
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.4);
+      transform: scale(1);
+    }
+    50% {
+      box-shadow: 0 0 40px rgba(var(--primary-rgb), 0.8);
+      transform: scale(1.02);
+    }
+  }
+
+  @keyframes pulse-soft {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .pulse-soft {
+    animation: pulse-soft 2s ease-in-out infinite;
+  }
 
   /* Hide ugly search cancel button in Chrome until we can style it properly */
   input[type="search"]::-webkit-search-cancel-button {

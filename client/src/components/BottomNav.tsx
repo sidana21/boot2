@@ -18,15 +18,15 @@ export default function BottomNav() {
           const isActive = location === path;
           return (
             <Link key={path} href={path}>
-              <a
-                className={`flex flex-col items-center justify-center gap-1 h-full hover-elevate ${
+              <div
+                className={`flex flex-col items-center justify-center gap-1 h-full hover-elevate cursor-pointer ${
                   isActive ? 'text-primary' : 'text-muted-foreground'
                 }`}
                 data-testid={`nav-${label}`}
               >
                 <Icon className="w-5 h-5" />
                 <span className="text-xs font-medium">{label}</span>
-              </a>
+              </div>
             </Link>
           );
         })}

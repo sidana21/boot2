@@ -1,16 +1,17 @@
 import DepositWithdrawForm from "@/components/DepositWithdrawForm";
 import { Card } from "@/components/ui/card";
-import { Wallet as WalletIcon, TrendingUp, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
+import { Wallet as WalletIcon, TrendingUp, ArrowDownToLine, ArrowUpFromLine, Sparkles } from "lucide-react";
 
 export default function Wallet() {
-  const currentBalance = 25.50;
+  const currentBalanceUSDT = 25.50;
+  const currentBalanceRTC = 1000;
   const totalDeposits = 20.00;
   const totalWithdrawals = 15.00;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <div className="p-3 rounded-full bg-accent/10">
+        <div className="p-3 rounded-full bg-accent/10 pulse-soft">
           <WalletIcon className="w-6 h-6 text-accent" />
         </div>
         <div>
@@ -19,14 +20,23 @@ export default function Wallet() {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-4">
-        <Card className="p-4">
+      <div className="grid md:grid-cols-4 gap-4">
+        <Card className="p-4 bg-gradient-to-br from-primary/10 to-background">
           <div className="flex items-center gap-2 mb-2">
             <WalletIcon className="w-4 h-4 text-primary" />
-            <p className="text-sm text-muted-foreground">الرصيد الحالي</p>
+            <p className="text-sm text-muted-foreground">رصيد USDT</p>
           </div>
-          <p className="text-3xl font-bold tabular-nums">{currentBalance.toFixed(2)}</p>
+          <p className="text-3xl font-bold tabular-nums text-primary">{currentBalanceUSDT.toFixed(2)}</p>
           <p className="text-xs text-muted-foreground mt-1">USDT</p>
+        </Card>
+
+        <Card className="p-4 bg-gradient-to-br from-secondary/10 to-background">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="w-4 h-4 text-secondary" />
+            <p className="text-sm text-muted-foreground">رصيد RTC</p>
+          </div>
+          <p className="text-3xl font-bold tabular-nums text-secondary">{currentBalanceRTC.toFixed(0)}</p>
+          <p className="text-xs text-muted-foreground mt-1">RTC Coin</p>
         </Card>
 
         <Card className="p-4">
@@ -49,11 +59,24 @@ export default function Wallet() {
       </div>
 
       <DepositWithdrawForm
-        currentBalance={currentBalance}
+        currentBalance={currentBalanceUSDT}
         minDeposit={5}
         minWithdraw={10}
         withdrawFee={0.5}
       />
+
+      <Card className="p-4 bg-gradient-to-br from-secondary/10 via-primary/5 to-accent/10 border-2 border-secondary/30">
+        <div className="flex items-center gap-2 mb-3">
+          <Sparkles className="w-5 h-5 text-secondary pulse-soft" />
+          <h3 className="font-bold">ما هي عملة RTC؟</h3>
+        </div>
+        <div className="space-y-2 text-sm">
+          <p>🪙 <span className="font-semibold">RTC (Replit Tap Coin)</span> هي عملة التكبيس الخاصة بك!</p>
+          <p>✨ تكسب 10 RTC مع كل تكبيسة</p>
+          <p>🎁 يمكن استبدال RTC بمكافآت ومزايا خاصة قريباً</p>
+          <p>📈 احفظ عملاتك لفرص قادمة مميزة!</p>
+        </div>
+      </Card>
     </div>
   );
 }

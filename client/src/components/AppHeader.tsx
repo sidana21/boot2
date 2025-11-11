@@ -1,6 +1,7 @@
 import { Bell, Menu, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface AppHeaderProps {
   onMenuClick?: () => void;
@@ -22,7 +23,7 @@ export default function AppHeader({ onMenuClick, notificationCount = 0, balance 
             <Menu className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center pulse-soft">
               <Wallet className="w-5 h-5 text-primary-foreground" />
             </div>
             <h1 className="text-xl font-bold">تطبيق التكبيس</h1>
@@ -35,6 +36,8 @@ export default function AppHeader({ onMenuClick, notificationCount = 0, balance 
             <span className="text-sm font-semibold tabular-nums">{balance.toFixed(2)}</span>
             <span className="text-xs text-muted-foreground">USDT</span>
           </div>
+          
+          <ThemeToggle />
           
           <Button 
             variant="ghost" 
