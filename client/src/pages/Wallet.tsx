@@ -1,12 +1,28 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import DepositWithdrawForm from "@/components/DepositWithdrawForm";
+import DepositAddress from "@/components/DepositAddress";
+import PaymentVerificationTimer from "@/components/PaymentVerificationTimer";
 import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { Wallet as WalletIcon, TrendingUp, ArrowDownToLine, ArrowUpFromLine, Sparkles } from "lucide-react";
+import type { SystemSetting } from "@shared/schema";
 
 export default function Wallet() {
+  const { toast } = useToast();
   const currentBalanceUSDT = 25.50;
   const currentBalanceRTC = 1000;
   const totalDeposits = 20.00;
   const totalWithdrawals = 15.00;
+  const [showVerificationTimer, setShowVerificationTimer] = useState(false);
+
+  const { data: settings = [] } = useQuery<SystemSetting[]>({
+    queryKey: ["/api/settings"],
+  });
+
+  const depositAddress = settings.find(s => s.key === "deposit_address")?.value || "TXYZexampleAddressForUSDTDeposits12345";
 
   return (
     <div className="space-y-6">
@@ -58,12 +74,58 @@ export default function Wallet() {
         </Card>
       </div>
 
-      <DepositWithdrawForm
-        currentBalance={currentBalanceUSDT}
-        minDeposit={5}
-        minWithdraw={10}
-        withdrawFee={0.5}
-      />
+      <Tabs defaultValue="deposit" dir="rtl">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="deposit" data-testid="tab-deposit-address">
+            <ArrowDownToLine className="w-4 h-4 ml-2" />
+            إيداع
+          </TabsTrigger>
+          <TabsTrigger value="withdraw" data-testid="tab-withdraw">
+            <ArrowUpFromLine className="w-4 h-4 ml-2" />
+            سحب
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="deposit" className="space-y-4">
+          <DepositAddress address={depositAddress} network="TRC20" />
+          
+          {!showVerificationTimer && (
+            <Button
+              className="w-full"
+              onClick={() => {
+                setShowVerificationTimer(true);
+                toast({
+                  title: "بدء التحقق",
+                  description: "سيتم التحقق من إيداعك تلقائياً",
+                });
+              }}
+              data-testid="button-start-verification"
+            >
+              قمت بالإرسال - تحقق من الإيداع
+            </Button>
+          )}
+          
+          {showVerificationTimer && (
+            <PaymentVerificationTimer
+              onVerificationComplete={() => {
+                toast({
+                  title: "تم التأكيد! ✓",
+                  description: "تمت إضافة الرصيد إلى محفظتك",
+                });
+              }}
+            />
+          )}
+        </TabsContent>
+
+        <TabsContent value="withdraw" className="space-y-4">
+          <DepositWithdrawForm
+            currentBalance={currentBalanceUSDT}
+            minDeposit={5}
+            minWithdraw={10}
+            withdrawFee={0.5}
+          />
+        </TabsContent>
+      </Tabs>
 
       <Card className="p-4 bg-gradient-to-br from-secondary/10 via-primary/5 to-accent/10 border-2 border-secondary/30">
         <div className="flex items-center gap-2 mb-3">

@@ -1,15 +1,17 @@
-import { Bell, Menu, Wallet } from "lucide-react";
+import { Bell, Menu, Wallet, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ThemeToggle from "@/components/ThemeToggle";
+import { Link } from "wouter";
 
 interface AppHeaderProps {
   onMenuClick?: () => void;
   notificationCount?: number;
   balance: number;
+  isAdmin?: boolean;
 }
 
-export default function AppHeader({ onMenuClick, notificationCount = 0, balance }: AppHeaderProps) {
+export default function AppHeader({ onMenuClick, notificationCount = 0, balance, isAdmin = true }: AppHeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4">
@@ -36,6 +38,19 @@ export default function AppHeader({ onMenuClick, notificationCount = 0, balance 
             <span className="text-sm font-semibold tabular-nums">{balance.toFixed(2)}</span>
             <span className="text-xs text-muted-foreground">USDT</span>
           </div>
+          
+          {isAdmin && (
+            <Link href="/admin">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="text-primary"
+                data-testid="button-admin"
+              >
+                <Shield className="w-5 h-5" />
+              </Button>
+            </Link>
+          )}
           
           <ThemeToggle />
           
