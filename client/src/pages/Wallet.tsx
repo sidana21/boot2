@@ -1,28 +1,92 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import DepositWithdrawForm from "@/components/DepositWithdrawForm";
 import DepositAddress from "@/components/DepositAddress";
 import PaymentVerificationTimer from "@/components/PaymentVerificationTimer";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Wallet as WalletIcon, TrendingUp, ArrowDownToLine, ArrowUpFromLine, Sparkles } from "lucide-react";
-import type { SystemSetting } from "@shared/schema";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { Wallet as WalletIcon, TrendingUp, ArrowDownToLine, ArrowUpFromLine, Sparkles, Coins, Gift, TrendingUpIcon, Zap } from "lucide-react";
+import type { SystemSetting, Deposit, InsertDeposit, User } from "@shared/schema";
 
 export default function Wallet() {
   const { toast } = useToast();
-  const currentBalanceUSDT = 25.50;
-  const currentBalanceRTC = 1000;
-  const totalDeposits = 20.00;
-  const totalWithdrawals = 15.00;
   const [showVerificationTimer, setShowVerificationTimer] = useState(false);
+  const [currentDepositId, setCurrentDepositId] = useState<string | null>(null);
+  const [depositAmount, setDepositAmount] = useState<string>("");
+
+  const { data: currentUser } = useQuery<User>({
+    queryKey: ["/api/current-user"],
+  });
 
   const { data: settings = [] } = useQuery<SystemSetting[]>({
     queryKey: ["/api/settings"],
   });
 
   const depositAddress = settings.find(s => s.key === "deposit_address")?.value || "TXYZexampleAddressForUSDTDeposits12345";
+  
+  const currentBalanceUSDT = parseFloat(currentUser?.usdtBalance || "0");
+  const currentBalanceRTC = parseFloat(currentUser?.rtcBalance || "0");
+  const totalDeposits = parseFloat(currentUser?.depositAmount || "0");
+  const totalWithdrawals = 0;
+
+  const createDepositMutation = useMutation({
+    mutationFn: async (depositData: InsertDeposit) => {
+      const res = await apiRequest("POST", "/api/deposits", depositData);
+      return res.json();
+    },
+    onSuccess: (newDeposit) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/deposits"] });
+      setCurrentDepositId(newDeposit.id);
+      setShowVerificationTimer(true);
+      toast({
+        title: "بدء التحقق",
+        description: "سيتم التحقق من إيداعك تلقائياً",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "خطأ",
+        description: "فشل في بدء عملية التحقق",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleStartVerification = () => {
+    if (!currentUser) {
+      toast({
+        title: "خطأ",
+        description: "فشل تحميل بيانات المستخدم",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const amount = parseFloat(depositAmount);
+    
+    if (!depositAmount || isNaN(amount) || amount < 5) {
+      toast({
+        title: "خطأ",
+        description: "يرجى إدخال مبلغ صحيح (الحد الأدنى 5 USDT)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const depositData: InsertDeposit = {
+      userId: currentUser.id,
+      amount: depositAmount,
+      status: "pending",
+      network: "TRC20",
+      txHash: null,
+    };
+    createDepositMutation.mutate(depositData);
+  };
 
   return (
     <div className="space-y-6">
@@ -90,28 +154,46 @@ export default function Wallet() {
           <DepositAddress address={depositAddress} network="TRC20" />
           
           {!showVerificationTimer && (
-            <Button
-              className="w-full"
-              onClick={() => {
-                setShowVerificationTimer(true);
-                toast({
-                  title: "بدء التحقق",
-                  description: "سيتم التحقق من إيداعك تلقائياً",
-                });
-              }}
-              data-testid="button-start-verification"
-            >
-              قمت بالإرسال - تحقق من الإيداع
-            </Button>
+            <Card className="p-4">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="deposit-amount">المبلغ المودع (USDT)</Label>
+                  <Input
+                    id="deposit-amount"
+                    type="number"
+                    min="5"
+                    step="0.01"
+                    placeholder="أدخل المبلغ الذي أرسلته"
+                    value={depositAmount}
+                    onChange={(e) => setDepositAmount(e.target.value)}
+                    data-testid="input-deposit-amount"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    الحد الأدنى: 5 USDT
+                  </p>
+                </div>
+                <Button
+                  className="w-full"
+                  onClick={handleStartVerification}
+                  disabled={createDepositMutation.isPending}
+                  data-testid="button-start-verification"
+                >
+                  {createDepositMutation.isPending ? "جاري المعالجة..." : "قمت بالإرسال - تحقق من الإيداع"}
+                </Button>
+              </div>
+            </Card>
           )}
           
-          {showVerificationTimer && (
+          {showVerificationTimer && currentDepositId && (
             <PaymentVerificationTimer
+              depositId={currentDepositId}
               onVerificationComplete={() => {
                 toast({
-                  title: "تم التأكيد! ✓",
+                  title: "تم التأكيد",
                   description: "تمت إضافة الرصيد إلى محفظتك",
                 });
+                setShowVerificationTimer(false);
+                setCurrentDepositId(null);
               }}
             />
           )}
@@ -133,10 +215,22 @@ export default function Wallet() {
           <h3 className="font-bold">ما هي عملة RTC؟</h3>
         </div>
         <div className="space-y-2 text-sm">
-          <p>🪙 <span className="font-semibold">RTC (Replit Tap Coin)</span> هي عملة التكبيس الخاصة بك!</p>
-          <p>✨ تكسب 10 RTC مع كل تكبيسة</p>
-          <p>🎁 يمكن استبدال RTC بمكافآت ومزايا خاصة قريباً</p>
-          <p>📈 احفظ عملاتك لفرص قادمة مميزة!</p>
+          <div className="flex items-start gap-2">
+            <Coins className="w-4 h-4 text-secondary flex-shrink-0 mt-0.5" />
+            <p><span className="font-semibold">RTC (Replit Tap Coin)</span> هي عملة التكبيس الخاصة بك!</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <Zap className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+            <p>تكسب 10 RTC مع كل تكبيسة</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <Gift className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+            <p>يمكن استبدال RTC بمكافآت ومزايا خاصة قريباً</p>
+          </div>
+          <div className="flex items-start gap-2">
+            <TrendingUpIcon className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+            <p>احفظ عملاتك لفرص قادمة مميزة!</p>
+          </div>
         </div>
       </Card>
     </div>

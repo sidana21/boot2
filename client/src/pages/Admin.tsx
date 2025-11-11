@@ -41,10 +41,12 @@ export default function Admin() {
 
   const updateDepositMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      return apiRequest("PATCH", `/api/deposits/${id}`, { status, confirmedAt: new Date() });
+      const res = await apiRequest("PATCH", `/api/deposits/${id}`, { status, confirmedAt: new Date() });
+      return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/deposits"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/deposits", variables.id] });
       toast({
         title: "تم التحديث",
         description: "تم تحديث حالة الإيداع بنجاح",

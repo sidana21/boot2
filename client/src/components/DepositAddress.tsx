@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, CheckCircle, AlertCircle, Clock, Shield } from "lucide-react";
+import { Copy, CheckCircle, AlertCircle, Clock, Shield, Wallet, ArrowDownToLine, CheckSquare, AlertTriangle } from "lucide-react";
 
 interface DepositAddressProps {
   address: string;
@@ -19,7 +19,7 @@ export default function DepositAddress({ address, network = "TRC20" }: DepositAd
       await navigator.clipboard.writeText(address);
       setCopied(true);
       toast({
-        title: "تم النسخ! ✓",
+        title: "تم النسخ",
         description: "تم نسخ عنوان الإيداع",
       });
       setTimeout(() => setCopied(false), 2000);
@@ -95,14 +95,26 @@ export default function DepositAddress({ address, network = "TRC20" }: DepositAd
 
         <div className="bg-gradient-to-br from-destructive/10 to-background p-4 rounded-lg border border-destructive/20">
           <h4 className="font-semibold mb-2 flex items-center gap-2 text-destructive">
-            <AlertCircle className="w-4 h-4" />
+            <AlertTriangle className="w-4 h-4" />
             تحذيرات مهمة
           </h4>
-          <ul className="space-y-1 text-xs text-muted-foreground">
-            <li>⚠️ استخدم شبكة <strong>TRC20</strong> فقط - أي شبكة أخرى ستؤدي لفقدان أموالك</li>
-            <li>⚠️ تأكد من العنوان قبل الإرسال - التحويلات لا يمكن إلغاؤها</li>
-            <li>⚠️ الحد الأدنى للإيداع: 5 USDT</li>
-            <li>⚠️ لا ترسل عملات أخرى غير USDT لهذا العنوان</li>
+          <ul className="space-y-2 text-xs text-muted-foreground">
+            <li className="flex items-start gap-2">
+              <AlertTriangle className="w-3 h-3 text-destructive flex-shrink-0 mt-0.5" />
+              <span>استخدم شبكة <strong>TRC20</strong> فقط - أي شبكة أخرى ستؤدي لفقدان أموالك</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <AlertTriangle className="w-3 h-3 text-destructive flex-shrink-0 mt-0.5" />
+              <span>تأكد من العنوان قبل الإرسال - التحويلات لا يمكن إلغاؤها</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <AlertTriangle className="w-3 h-3 text-destructive flex-shrink-0 mt-0.5" />
+              <span>الحد الأدنى للإيداع: 5 USDT</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <AlertTriangle className="w-3 h-3 text-destructive flex-shrink-0 mt-0.5" />
+              <span>لا ترسل عملات أخرى غير USDT لهذا العنوان</span>
+            </li>
           </ul>
         </div>
 

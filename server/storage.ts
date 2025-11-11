@@ -33,6 +33,8 @@ export interface IStorage {
   getAllSettings(): Promise<SystemSetting[]>;
 }
 
+export const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000001";
+
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private deposits: Map<string, Deposit>;
@@ -44,6 +46,18 @@ export class MemStorage implements IStorage {
     this.deposits = new Map();
     this.withdrawals = new Map();
     this.settings = new Map();
+    
+    const defaultUser: User = {
+      id: DEFAULT_USER_ID,
+      username: "demo_user",
+      password: "hashed_password",
+      isAdmin: true,
+      usdtBalance: "25.50",
+      rtcBalance: "1000",
+      referralCode: "TAPDEMO123",
+      depositAmount: "20.00",
+    };
+    this.users.set(DEFAULT_USER_ID, defaultUser);
     
     this.settings.set("deposit_address", {
       id: randomUUID(),

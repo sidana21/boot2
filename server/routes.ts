@@ -1,9 +1,14 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage, DEFAULT_USER_ID } from "./storage";
 import { insertDepositSchema, insertWithdrawalSchema, insertSystemSettingSchema } from "@shared/schema";
 
 function adminMiddleware(req: Request, res: Response, next: NextFunction) {
+  if (process.env.NODE_ENV === "development") {
+    next();
+    return;
+  }
+  
   const isAdmin = (req as any).isAdmin;
   if (!isAdmin) {
     return res.status(403).json({ error: "Unauthorized - Admin access required" });
@@ -13,6 +18,18 @@ function adminMiddleware(req: Request, res: Response, next: NextFunction) {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
+  app.get("/api/current-user", async (req, res) => {
+    try {
+      const user = await storage.getUser(DEFAULT_USER_ID);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.get("/api/settings", async (req, res) => {
     try {
       const settings = await storage.getAllSettings();

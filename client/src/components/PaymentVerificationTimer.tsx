@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Clock, CheckCircle, RefreshCw, AlertCircle } from "lucide-react";
+import type { Deposit } from "@shared/schema";
 
 interface PaymentVerificationTimerProps {
   depositId?: string;
@@ -19,6 +21,32 @@ export default function PaymentVerificationTimer({
   const [timeLeft, setTimeLeft] = useState(maxDuration);
   const [isVerifying, setIsVerifying] = useState(true);
   const [status, setStatus] = useState<"pending" | "verified" | "timeout">("pending");
+
+  const { data: deposit, refetch, isError, error } = useQuery<Deposit>({
+    queryKey: ["/api/deposits", depositId],
+    queryFn: async () => {
+      if (!depositId) throw new Error("No deposit ID");
+      const response = await fetch(`/api/deposits/${depositId}`);
+      if (!response.ok) throw new Error("Failed to fetch deposit");
+      return response.json();
+    },
+    enabled: isVerifying && !!depositId,
+    refetchInterval: isVerifying ? 10000 : false,
+  });
+
+  useEffect(() => {
+    if (isError) {
+      setStatus("timeout");
+      setIsVerifying(false);
+      return;
+    }
+
+    if (deposit && deposit.status === "confirmed") {
+      setStatus("verified");
+      setIsVerifying(false);
+      onVerificationComplete?.();
+    }
+  }, [deposit, onVerificationComplete, isError]);
 
   useEffect(() => {
     if (!isVerifying || timeLeft <= 0) {
@@ -39,20 +67,10 @@ export default function PaymentVerificationTimer({
       });
     }, 1000);
 
-    const verificationCheck = setInterval(() => {
-      const randomCheck = Math.random();
-      if (randomCheck > 0.95) {
-        setStatus("verified");
-        setIsVerifying(false);
-        onVerificationComplete?.();
-      }
-    }, 5000);
-
     return () => {
       clearInterval(timer);
-      clearInterval(verificationCheck);
     };
-  }, [isVerifying, timeLeft, onVerificationComplete]);
+  }, [isVerifying, timeLeft]);
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -62,6 +80,7 @@ export default function PaymentVerificationTimer({
     setTimeLeft(maxDuration);
     setIsVerifying(true);
     setStatus("pending");
+    refetch();
   };
 
   if (status === "verified") {
@@ -73,7 +92,7 @@ export default function PaymentVerificationTimer({
           </div>
           <div>
             <h3 className="text-xl font-bold text-green-600 dark:text-green-400 mb-2">
-              تم تأكيد الإيداع! ✓
+              تم تأكيد الإيداع
             </h3>
             <p className="text-sm text-muted-foreground">
               تمت إضافة الرصيد إلى محفظتك بنجاح
@@ -85,6 +104,10 @@ export default function PaymentVerificationTimer({
   }
 
   if (status === "timeout") {
+    const message = isError
+      ? "حدث خطأ أثناء التحقق من الإيداع. يرجى المحاولة مرة أخرى."
+      : "قد يستغرق الأمر وقتاً أطول. يمكنك المحاولة مرة أخرى أو انتظار التأكيد اليدوي من الإدارة.";
+    
     return (
       <Card className="p-6 bg-gradient-to-br from-yellow-500/10 to-background border-2 border-yellow-500/30">
         <div className="flex flex-col items-center gap-4 text-center">
@@ -93,10 +116,10 @@ export default function PaymentVerificationTimer({
           </div>
           <div>
             <h3 className="text-xl font-bold text-yellow-600 dark:text-yellow-400 mb-2">
-              لم يتم العثور على المعاملة بعد
+              {isError ? "خطأ في التحقق" : "لم يتم العثور على المعاملة بعد"}
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              قد يستغرق الأمر وقتاً أطول. يمكنك المحاولة مرة أخرى أو انتظار التأكيد اليدوي من الإدارة.
+              {message}
             </p>
             <Button onClick={handleRetry} variant="outline" data-testid="button-retry-verification">
               <RefreshCw className="w-4 h-4 ml-2" />
@@ -137,9 +160,18 @@ export default function PaymentVerificationTimer({
             <div className="flex-1">
               <p className="font-semibold mb-2">يتم التحقق من معاملتك...</p>
               <ul className="space-y-1 text-sm text-muted-foreground">
-                <li>✓ التحقق من شبكة TRC20</li>
-                <li>✓ مطابقة العنوان والمبلغ</li>
-                <li className="text-primary">⏳ انتظار تأكيدات البلوكتشين...</li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-3 h-3 text-green-500" />
+                  <span>التحقق من شبكة TRC20</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-3 h-3 text-green-500" />
+                  <span>مطابقة العنوان والمبلغ</span>
+                </li>
+                <li className="flex items-center gap-2 text-primary">
+                  <Clock className="w-3 h-3" />
+                  <span>انتظار تأكيدات البلوكتشين...</span>
+                </li>
               </ul>
             </div>
           </div>
