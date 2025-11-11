@@ -16,10 +16,16 @@ export default function CountdownTimer({ onComplete }: CountdownTimerProps) {
   useEffect(() => {
     const calculateTimeLeft = () => {
       const now = new Date();
-      const tomorrow = new Date(now);
-      tomorrow.setHours(24, 0, 0, 0);
+      const currentHour = now.getHours();
       
-      const diff = tomorrow.getTime() - now.getTime();
+      const nextReset = new Date(now);
+      if (currentHour < 12) {
+        nextReset.setHours(12, 0, 0, 0);
+      } else {
+        nextReset.setHours(24, 0, 0, 0);
+      }
+      
+      const diff = nextReset.getTime() - now.getTime();
       
       if (diff <= 0) {
         onComplete?.();
