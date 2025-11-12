@@ -1,58 +1,80 @@
 import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import type { User } from "@shared/schema";
 import WalletBalanceCard from "@/components/WalletBalanceCard";
 import TradingBot from "@/components/TradingBot";
 import StatsGrid from "@/components/StatsGrid";
 import CountdownTimer from "@/components/CountdownTimer";
-import LuckyWheel from "@/components/LuckyWheel";
+import TreasureBox from "@/components/TreasureBox";
 import { Button } from "@/components/ui/button";
 import { ArrowDownToLine, ArrowUpFromLine, Users } from "lucide-react";
 import { useLocation } from "wouter";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// TODO: remove mock functionality - replace with real user data
 export default function Home() {
   const [, setLocation] = useLocation();
-  const [depositAmount] = useState(10); // TODO: get from user's actual deposit
-  const [balanceUSDT, setBalanceUSDT] = useState(25.50);
-  const [balanceRTC, setBalanceRTC] = useState(0);
-  const [canSpinWheel, setCanSpinWheel] = useState(true); // TODO: check if user can spin today
+  const { data: user, isLoading } = useQuery<User>({
+    queryKey: ['/api/current-user'],
+  });
+  
   const [dailyEarningMultiplier] = useState(() => {
-    // Random daily multiplier between 15-25% (averaging 20%)
     return 0.15 + Math.random() * 0.10;
   });
   
+  const depositAmount = parseFloat(user?.depositAmount || "0");
   const dailyTarget = depositAmount * dailyEarningMultiplier;
   const [earnedToday, setEarnedToday] = useState(0);
   const totalEarnings = 125.50;
   const isTaskComplete = earnedToday >= dailyTarget;
 
+  const tradingMutation = useMutation({
+    mutationFn: async (amount: number) => {
+      const response = await fetch('/api/trading/complete', {
+        method: 'POST',
+        body: JSON.stringify({ userId: user?.id, amount }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to complete trading');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/current-user'] });
+    },
+  });
+
   const handleEarningsUpdate = (usdtAmount: number, rtcAmount: number) => {
     setEarnedToday(prev => prev + usdtAmount);
-    setBalanceUSDT(prev => prev + usdtAmount);
-    setBalanceRTC(prev => prev + rtcAmount);
+    tradingMutation.mutate(usdtAmount);
     console.log(`Trade completed! Earned: ${usdtAmount.toFixed(4)} USDT + ${rtcAmount.toFixed(0)} RTC`);
   };
 
   const handleTimerComplete = () => {
     console.log('Timer completed! Resetting daily task...');
     setEarnedToday(0);
-    setCanSpinWheel(true);
   };
 
-  const handleWheelSpin = (prize: number) => {
-    console.log(`Won ${prize} RTC from lucky wheel!`);
-    setBalanceRTC(prev => prev + prize);
-    
-    const prizeInUSDT = prize / 100;
-    setBalanceUSDT(prev => prev + prizeInUSDT);
-    
-    setCanSpinWheel(false);
-  };
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-48 w-full" />
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <div className="text-center p-8">Failed to load user data</div>;
+  }
 
   return (
     <div className="space-y-6">
       <WalletBalanceCard
-        balanceUSDT={balanceUSDT}
-        balanceRTC={balanceRTC}
+        balanceUSDT={parseFloat(user.usdtBalance)}
+        balanceRTC={parseFloat(user.rtcBalance)}
         todayEarnings={earnedToday}
         totalEarnings={totalEarnings}
         depositAmount={depositAmount}
@@ -98,9 +120,12 @@ export default function Home() {
         />
       )}
 
-      <LuckyWheel 
-        onSpin={handleWheelSpin}
-        canSpin={canSpinWheel}
+      <TreasureBox 
+        userId={user.id}
+        depositBonus={parseFloat(user.depositBonus)}
+        tradingVolume={parseFloat(user.tradingVolume)}
+        requiredVolume={depositAmount * 10}
+        isFirstDeposit={!user.firstDepositBonusUsed}
       />
 
       <StatsGrid

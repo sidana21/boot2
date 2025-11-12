@@ -107,8 +107,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.body.status === "confirmed" && deposit.userId) {
         const user = await storage.getUser(deposit.userId);
         if (user) {
-          const newBalance = (parseFloat(user.usdtBalance) + parseFloat(deposit.amount)).toString();
-          await storage.updateUser(user.id, { usdtBalance: newBalance });
+          const depositAmount = parseFloat(deposit.amount);
+          let bonusAmount = 0;
+          
+          if (!user.firstDepositBonusUsed) {
+            bonusAmount = depositAmount * 0.10;
+            const requiredTradingVolume = depositAmount * 10;
+            
+            await storage.updateUser(user.id, { 
+              usdtBalance: (parseFloat(user.usdtBalance) + depositAmount).toString(),
+              depositBonus: (parseFloat(user.depositBonus) + bonusAmount).toString(),
+              firstDepositBonusUsed: true,
+              depositAmount: (parseFloat(user.depositAmount) + depositAmount).toString(),
+            });
+          } else {
+            await storage.updateUser(user.id, { 
+              usdtBalance: (parseFloat(user.usdtBalance) + depositAmount).toString(),
+              depositAmount: (parseFloat(user.depositAmount) + depositAmount).toString(),
+            });
+          }
         }
       }
       
@@ -176,6 +193,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Withdrawal not found" });
       }
       res.json(withdrawal);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/trading/complete", async (req, res) => {
+    try {
+      const { userId, amount } = req.body;
+      
+      if (!userId || !amount) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const tradingAmount = parseFloat(amount);
+      if (isNaN(tradingAmount) || tradingAmount <= 0 || tradingAmount > 10000) {
+        return res.status(400).json({ error: "Invalid trading amount" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      const newTradingVolume = parseFloat(user.tradingVolume) + tradingAmount;
+      
+      await storage.updateUser(user.id, {
+        tradingVolume: newTradingVolume.toString(),
+      });
+      
+      res.json({ 
+        success: true, 
+        newTradingVolume,
+      });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/bonus/claim", async (req, res) => {
+    try {
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ error: "Missing userId" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      const depositBonus = parseFloat(user.depositBonus);
+      const tradingVolume = parseFloat(user.tradingVolume);
+      const requiredVolume = parseFloat(user.depositAmount) * 10;
+      
+      if (depositBonus <= 0) {
+        return res.status(400).json({ error: "No bonus available" });
+      }
+      
+      if (tradingVolume < requiredVolume) {
+        return res.status(400).json({ 
+          error: "Trading volume requirement not met",
+          current: tradingVolume,
+          required: requiredVolume,
+        });
+      }
+      
+      await storage.updateUser(user.id, {
+        bonusWithdrawable: (parseFloat(user.bonusWithdrawable) + depositBonus).toString(),
+        usdtBalance: (parseFloat(user.usdtBalance) + depositBonus).toString(),
+        depositBonus: "0",
+      });
+      
+      const updatedUser = await storage.getUser(user.id);
+      
+      res.json({ 
+        success: true,
+        bonusClaimed: depositBonus,
+        user: updatedUser,
+      });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
