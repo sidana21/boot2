@@ -5,15 +5,21 @@ import passport from "./auth";
 import { storage, DEFAULT_USER_ID } from "./storage";
 import { insertDepositSchema, insertWithdrawalSchema, insertSystemSettingSchema, insertUserSchema, loginSchema } from "@shared/schema";
 
+function requireAuth(req: Request, res: Response, next: NextFunction) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "يجب تسجيل الدخول أولاً" });
+  }
+  next();
+}
+
 function adminMiddleware(req: Request, res: Response, next: NextFunction) {
-  if (process.env.NODE_ENV === "development") {
-    next();
-    return;
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "يجب تسجيل الدخول أولاً" });
   }
   
-  const isAdmin = (req as any).isAdmin;
-  if (!isAdmin) {
-    return res.status(403).json({ error: "Unauthorized - Admin access required" });
+  const user = req.user as any;
+  if (!user?.isAdmin) {
+    return res.status(403).json({ error: "غير مصرح - يتطلب صلاحيات المسؤول" });
   }
   next();
 }
@@ -90,13 +96,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(userWithoutPassword);
   });
 
-  app.get("/api/current-user", async (req, res) => {
+  app.get("/api/current-user", requireAuth, async (req, res) => {
     try {
-      const user = await storage.getUser(DEFAULT_USER_ID);
+      const userId = (req.user as any).id;
+      const user = await storage.getUser(userId);
       if (!user) {
-        return res.status(404).json({ error: "User not found" });
+        return res.status(404).json({ error: "المستخدم غير موجود" });
       }
-      res.json(user);
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -133,9 +141,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/deposits", async (req, res) => {
+  app.post("/api/deposits", requireAuth, async (req, res) => {
     try {
-      const validated = insertDepositSchema.parse(req.body);
+      const userId = (req.user as any).id;
+      const validated = insertDepositSchema.parse({
+        ...req.body,
+        userId,
+      });
       const deposit = await storage.createDeposit(validated);
       res.json(deposit);
     } catch (error: any) {
@@ -143,14 +155,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/deposits", async (req, res) => {
+  app.get("/api/deposits", requireAuth, async (req, res) => {
     try {
-      const userId = req.query.userId as string;
-      if (userId) {
-        const deposits = await storage.getDepositsByUserId(userId);
-        return res.json(deposits);
-      }
-      const deposits = await storage.getAllDeposits();
+      const userId = (req.user as any).id;
+      const deposits = await storage.getDepositsByUserId(userId);
       res.json(deposits);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -207,18 +215,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/withdrawals", async (req, res) => {
+  app.post("/api/withdrawals", requireAuth, async (req, res) => {
     try {
-      const validated = insertWithdrawalSchema.parse(req.body);
+      const userId = (req.user as any).id;
+      const validated = insertWithdrawalSchema.parse({
+        ...req.body,
+        userId,
+      });
       
-      const user = await storage.getUser(validated.userId);
+      const user = await storage.getUser(userId);
       if (!user) {
-        return res.status(404).json({ error: "User not found" });
+        return res.status(404).json({ error: "المستخدم غير موجود" });
       }
       
       const totalAmount = parseFloat(validated.amount) + parseFloat(validated.fee || "0.5");
       if (parseFloat(user.usdtBalance) < totalAmount) {
-        return res.status(400).json({ error: "Insufficient balance" });
+        return res.status(400).json({ error: "الرصيد غير كافٍ" });
       }
       
       const withdrawal = await storage.createWithdrawal(validated);
@@ -232,14 +244,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/withdrawals", async (req, res) => {
+  app.get("/api/withdrawals", requireAuth, async (req, res) => {
     try {
-      const userId = req.query.userId as string;
-      if (userId) {
-        const withdrawals = await storage.getWithdrawalsByUserId(userId);
-        return res.json(withdrawals);
-      }
-      const withdrawals = await storage.getAllWithdrawals();
+      const userId = (req.user as any).id;
+      const withdrawals = await storage.getWithdrawalsByUserId(userId);
       res.json(withdrawals);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -270,22 +278,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/trading/complete", async (req, res) => {
+  app.post("/api/trading/complete", requireAuth, async (req, res) => {
     try {
-      const { userId, amount } = req.body;
+      const userId = (req.user as any).id;
+      const { amount } = req.body;
       
-      if (!userId || !amount) {
-        return res.status(400).json({ error: "Missing required fields" });
+      if (!amount) {
+        return res.status(400).json({ error: "المبلغ مطلوب" });
       }
 
       const tradingAmount = parseFloat(amount);
       if (isNaN(tradingAmount) || tradingAmount <= 0 || tradingAmount > 10000) {
-        return res.status(400).json({ error: "Invalid trading amount" });
+        return res.status(400).json({ error: "مبلغ التداول غير صالح" });
       }
       
       const user = await storage.getUser(userId);
       if (!user) {
-        return res.status(404).json({ error: "User not found" });
+        return res.status(404).json({ error: "المستخدم غير موجود" });
       }
       
       const newTradingVolume = parseFloat(user.tradingVolume) + tradingAmount;
@@ -303,17 +312,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/bonus/claim", async (req, res) => {
+  app.post("/api/bonus/claim", requireAuth, async (req, res) => {
     try {
-      const { userId } = req.body;
-      
-      if (!userId) {
-        return res.status(400).json({ error: "Missing userId" });
-      }
+      const userId = (req.user as any).id;
       
       const user = await storage.getUser(userId);
       if (!user) {
-        return res.status(404).json({ error: "User not found" });
+        return res.status(404).json({ error: "المستخدم غير موجود" });
       }
       
       const depositBonus = parseFloat(user.depositBonus);
@@ -321,12 +326,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const requiredVolume = parseFloat(user.depositAmount) * 10;
       
       if (depositBonus <= 0) {
-        return res.status(400).json({ error: "No bonus available" });
+        return res.status(400).json({ error: "لا توجد مكافآت متاحة" });
       }
       
       if (tradingVolume < requiredVolume) {
         return res.status(400).json({ 
-          error: "Trading volume requirement not met",
+          error: "لم يتم تحقيق حجم التداول المطلوب",
           current: tradingVolume,
           required: requiredVolume,
         });
@@ -339,11 +344,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const updatedUser = await storage.getUser(user.id);
+      const { password: _, ...userWithoutPassword } = updatedUser!;
       
       res.json({ 
         success: true,
         bonusClaimed: depositBonus,
-        user: updatedUser,
+        user: userWithoutPassword,
       });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
