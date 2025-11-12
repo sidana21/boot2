@@ -1,8 +1,11 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import type { Deposit, Withdrawal, User } from "@shared/schema";
 import TransactionCard, { TransactionType, TransactionStatus } from "@/components/TransactionCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { History, MousePointer2, ArrowDownToLine, ArrowUpFromLine, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Transaction {
   id: string;
@@ -13,32 +16,58 @@ interface Transaction {
   description?: string;
 }
 
-// TODO: remove mock data - replace with real transaction data
-const mockTransactions: Transaction[] = [
-  { id: '1', type: 'tap', amount: 10.00, status: 'completed', date: 'منذ ساعة', description: '100 تكبيسة + 1000 RTC' },
-  { id: '2', type: 'referral', amount: 2.00, status: 'completed', date: 'منذ ساعتين', description: 'عمولة من أحمد' },
-  { id: '3', type: 'referral', amount: 1.50, status: 'completed', date: 'منذ 3 ساعات', description: 'عمولة من سارة' },
-  { id: '4', type: 'deposit', amount: 5.00, status: 'completed', date: 'أمس' },
-  { id: '5', type: 'withdraw', amount: 15.00, status: 'pending', date: 'قبل يومين' },
-  { id: '6', type: 'tap', amount: 10.00, status: 'completed', date: 'قبل يومين', description: '100 تكبيسة + 1000 RTC' },
-  { id: '7', type: 'referral', amount: 3.00, status: 'completed', date: 'قبل 3 أيام', description: 'عمولة من محمد' },
-  { id: '8', type: 'deposit', amount: 10.00, status: 'completed', date: 'قبل أسبوع' },
-];
-
 export default function Transactions() {
   const [filter, setFilter] = useState<'all' | TransactionType>('all');
 
+  const { data: user, isLoading: userLoading } = useQuery<User>({
+    queryKey: ['/api/current-user'],
+  });
+
+  const { data: deposits = [], isLoading: depositsLoading } = useQuery<Deposit[]>({
+    queryKey: ['/api/deposits'],
+  });
+
+  const { data: withdrawals = [], isLoading: withdrawalsLoading } = useQuery<Withdrawal[]>({
+    queryKey: ['/api/withdrawals'],
+  });
+
+  const isLoading = userLoading || depositsLoading || withdrawalsLoading;
+
+  const transactions: Transaction[] = [
+    ...deposits.map(d => ({
+      id: d.id,
+      type: 'deposit' as TransactionType,
+      amount: parseFloat(d.amount),
+      status: d.status as TransactionStatus,
+      date: new Date(d.createdAt).toLocaleDateString('ar'),
+    })),
+    ...withdrawals.map(w => ({
+      id: w.id,
+      type: 'withdraw' as TransactionType,
+      amount: parseFloat(w.amount),
+      status: w.status as TransactionStatus,
+      date: new Date(w.createdAt).toLocaleDateString('ar'),
+    })),
+  ];
+
   const filteredTransactions = filter === 'all' 
-    ? mockTransactions 
-    : mockTransactions.filter(t => t.type === filter);
+    ? transactions 
+    : transactions.filter(t => t.type === filter);
 
-  const totalEarned = mockTransactions
-    .filter(t => t.type === 'tap' || t.type === 'referral')
-    .reduce((sum, t) => sum + t.amount, 0);
+  const totalEarned = parseFloat(user?.bonusWithdrawable || "0");
+  const totalDeposited = deposits
+    .filter(d => d.status === 'confirmed')
+    .reduce((sum, d) => sum + parseFloat(d.amount), 0);
 
-  const totalDeposited = mockTransactions
-    .filter(t => t.type === 'deposit' && t.status === 'completed')
-    .reduce((sum, t) => sum + t.amount, 0);
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-48 w-full" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import type { User } from "@shared/schema";
 import ReferralCard from "@/components/ReferralCard";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Users, 
   Trophy, 
@@ -37,19 +40,6 @@ interface LeaderboardUser {
   isCurrentUser?: boolean;
 }
 
-const mockReferrals: Referral[] = [
-  { id: '1', name: 'أحمد محمد', earnings: 50.00, commission: 10.00, date: 'منذ 3 أيام' },
-  { id: '2', name: 'سارة علي', earnings: 35.00, commission: 7.00, date: 'منذ 5 أيام' },
-  { id: '3', name: 'محمد حسن', earnings: 40.00, commission: 8.00, date: 'منذ أسبوع' },
-];
-
-const leaderboard: LeaderboardUser[] = [
-  { rank: 1, name: 'عبدالله العلي', referrals: 52, earnings: 1240.50 },
-  { rank: 2, name: 'فاطمة محمد', referrals: 48, earnings: 1156.00 },
-  { rank: 3, name: 'خالد أحمد', referrals: 45, earnings: 1089.00 },
-  { rank: 4, name: 'أنت', referrals: 3, earnings: 25.00, isCurrentUser: true },
-  { rank: 5, name: 'نور الدين', referrals: 38, earnings: 912.50 },
-];
 
 const tierBonuses = [
   { 
@@ -107,8 +97,15 @@ const messageTemplates = [
 
 export default function Referrals() {
   const { toast } = useToast();
-  const totalReferralEarnings = mockReferrals.reduce((sum, r) => sum + r.commission, 0);
-  const currentReferrals = mockReferrals.length;
+  
+  const { data: user, isLoading } = useQuery<User>({
+    queryKey: ['/api/current-user'],
+  });
+  
+  const referrals: Referral[] = [];
+  const leaderboard: LeaderboardUser[] = [];
+  const totalReferralEarnings = 0;
+  const currentReferrals = 0;
   
   const currentTier = tierBonuses.find(
     tier => currentReferrals >= tier.minReferrals && currentReferrals <= tier.maxReferrals
@@ -119,8 +116,22 @@ export default function Referrals() {
     ? ((currentReferrals - currentTier.minReferrals) / (nextTier.minReferrals - currentTier.minReferrals)) * 100
     : 100;
 
-  const referralCode = "TAP2024XYZ";
-  const referralLink = "https://tapapp.example.com/ref/TAP2024XYZ";
+  const referralCode = user?.referralCode || "";
+  const referralLink = `${window.location.origin}/register?ref=${referralCode}`;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-48 w-full" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <div className="text-center p-8">Failed to load user data</div>;
+  }
 
   const copyTemplate = (template: string) => {
     const message = template
@@ -367,16 +378,16 @@ export default function Referrals() {
         </TabsContent>
 
         <TabsContent value="referrals" className="space-y-4">
-          {mockReferrals.length > 0 ? (
+          {referrals.length > 0 ? (
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold">أصدقائك ({mockReferrals.length})</h3>
+                <h3 className="text-lg font-bold">أصدقائك ({referrals.length})</h3>
                 <Badge variant="secondary">
                   إجمالي العمولات: {totalReferralEarnings.toFixed(2)} USDT
                 </Badge>
               </div>
               <div className="space-y-3">
-                {mockReferrals.map((referral) => (
+                {referrals.map((referral) => (
                   <Card key={referral.id} className="p-4 hover-elevate" data-testid={`referral-${referral.id}`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 flex-1">

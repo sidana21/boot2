@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import bcrypt from "bcryptjs";
 import passport from "./auth";
-import { storage, DEFAULT_USER_ID } from "./storage";
+import { storage } from "./storage";
 import { insertDepositSchema, insertWithdrawalSchema, insertSystemSettingSchema, insertUserSchema, loginSchema } from "@shared/schema";
 
 function requireAuth(req: Request, res: Response, next: NextFunction) {

@@ -25,7 +25,7 @@ export default function Home() {
   const depositAmount = parseFloat(user?.depositAmount || "0");
   const dailyTarget = depositAmount * dailyEarningMultiplier;
   const [earnedToday, setEarnedToday] = useState(0);
-  const totalEarnings = 125.50;
+  const totalEarnings = parseFloat(user?.bonusWithdrawable || "0");
   const isTaskComplete = earnedToday >= dailyTarget;
 
   const tradingMutation = useMutation({
