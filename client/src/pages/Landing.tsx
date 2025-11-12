@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import ThemeToggle from "@/components/ThemeToggle";
 import { 
   ArrowLeft,
   TrendingUp,
@@ -14,8 +15,10 @@ import {
   CheckCircle,
   DollarSign,
   Clock,
-  Sparkles
+  Sparkles,
+  Bot
 } from "lucide-react";
+import { SiBinance, SiCoinbase } from "react-icons/si";
 import rtcLogo from "@assets/1762901598272_1762903589759.jpg";
 
 export default function Landing() {
@@ -59,10 +62,13 @@ export default function Landing() {
               <p className="text-sm text-muted-foreground">نادي الاستثمار الذكي</p>
             </div>
           </div>
-          <Button onClick={() => setLocation('/home')} size="lg" data-testid="button-enter-app">
-            <ArrowLeft className="w-5 h-5 ml-2" />
-            دخول التطبيق
-          </Button>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <Button onClick={() => setLocation('/home')} size="lg" data-testid="button-enter-app">
+              <ArrowLeft className="w-5 h-5 ml-2" />
+              دخول التطبيق
+            </Button>
+          </div>
         </header>
 
         <div className="text-center mb-12">
@@ -73,8 +79,11 @@ export default function Landing() {
           <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-l from-primary via-accent to-primary bg-clip-text text-transparent">
             استثمارك الذكي للربح اليومي
           </h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            منصة استثمار مبتكرة تتيح لك ربح عملة USDT المستقرة يومياً من خلال نظام بسيط وآمن
+          <p className="text-xl text-muted-foreground mb-4 max-w-2xl mx-auto">
+            نعمل ببوتات تداول ذكية على المنصات الموثوقة 24/7 - البوتات الأقوى في المجال
+          </p>
+          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+            استثمر بذكاء واربح عملة USDT المستقرة يومياً بنظام آمن ومضمون
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button size="lg" onClick={() => setLocation('/home')} className="text-lg px-8" data-testid="button-start-now">
@@ -87,6 +96,48 @@ export default function Landing() {
             </Button>
           </div>
         </div>
+
+        <Card className="p-8 mb-12 bg-gradient-to-br from-primary/10 via-accent/5 to-background border-primary/20">
+          <div className="text-center mb-6">
+            <h3 className="text-2xl font-bold mb-3 flex items-center justify-center gap-2">
+              <Bot className="w-8 h-8 text-primary" />
+              نتداول على أفضل المنصات العالمية
+            </h3>
+            <p className="text-muted-foreground">بوتات تداول متقدمة تعمل 24/7 على منصات موثوقة ومرخصة</p>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-8 mb-6">
+            <div className="flex items-center gap-2 text-4xl" data-testid="platform-binance">
+              <SiBinance className="text-yellow-500" />
+              <span className="text-lg font-semibold text-foreground">Binance</span>
+            </div>
+            <div className="flex items-center gap-2 text-4xl" data-testid="platform-bybit">
+              <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-xl">B</div>
+              <span className="text-lg font-semibold text-foreground">Bybit</span>
+            </div>
+            <div className="flex items-center gap-2 text-4xl" data-testid="platform-okx">
+              <div className="w-10 h-10 rounded-full bg-black dark:bg-white flex items-center justify-center text-white dark:text-black font-bold text-xl">O</div>
+              <span className="text-lg font-semibold text-foreground">OKX</span>
+            </div>
+            <div className="flex items-center gap-2 text-4xl" data-testid="platform-coinbase">
+              <SiCoinbase className="text-blue-600" />
+              <span className="text-lg font-semibold text-foreground">Coinbase</span>
+            </div>
+          </div>
+          <div className="grid md:grid-cols-3 gap-4 text-center">
+            <div>
+              <p className="text-3xl font-bold text-primary tabular-nums">24/7</p>
+              <p className="text-sm text-muted-foreground">تداول مستمر</p>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-accent tabular-nums">98%</p>
+              <p className="text-sm text-muted-foreground">نسبة نجاح</p>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-green-600 dark:text-green-400 tabular-nums">+500</p>
+              <p className="text-sm text-muted-foreground">صفقة يومياً</p>
+            </div>
+          </div>
+        </Card>
 
         <div className="grid md:grid-cols-3 gap-6 mb-12">
           <Card className="p-6 text-center bg-gradient-to-br from-primary/10 to-background hover-elevate">
