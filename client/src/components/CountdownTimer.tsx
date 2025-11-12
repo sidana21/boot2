@@ -51,7 +51,7 @@ export default function CountdownTimer({ onComplete }: CountdownTimerProps) {
     <Card className="p-6 bg-gradient-to-br from-destructive/10 via-background to-accent/10 border-2 border-destructive/30">
       <div className="flex items-center justify-center gap-3 mb-4">
         <Clock className="w-6 h-6 text-destructive pulse-soft" />
-        <h3 className="text-lg font-bold">العد التنازلي لمهمة جديدة</h3>
+        <h3 className="text-lg font-bold">العد التنازلي للجلسة القادمة</h3>
         <RefreshCw className="w-5 h-5 text-accent pulse-soft" />
       </div>
 
@@ -79,7 +79,7 @@ export default function CountdownTimer({ onComplete }: CountdownTimerProps) {
       </div>
 
       <p className="text-center text-sm text-muted-foreground mt-4">
-        🔄 سيتم تجديد مهمتك اليومية تلقائياً
+        🔄 ستبدأ الجلسة القادمة تلقائياً بعد انتهاء العد التنازلي
       </p>
     </Card>
   );
