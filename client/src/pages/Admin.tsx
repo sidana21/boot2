@@ -16,7 +16,9 @@ import {
   CheckCircle, 
   XCircle,
   Clock,
-  Copy
+  Copy,
+  Users,
+  Gift
 } from "lucide-react";
 import type { Deposit, Withdrawal, SystemSetting } from "@shared/schema";
 
@@ -25,6 +27,18 @@ export default function Admin() {
   const [depositAddress, setDepositAddress] = useState("");
   const [binanceApiKey, setBinanceApiKey] = useState("");
   const [binanceApiSecret, setBinanceApiSecret] = useState("");
+  
+  const [firstReferralBonus, setFirstReferralBonus] = useState("");
+  const [bronzeCommission, setBronzeCommission] = useState("");
+  const [silverCommission, setSilverCommission] = useState("");
+  const [goldCommission, setGoldCommission] = useState("");
+  const [diamondCommission, setDiamondCommission] = useState("");
+  const [silverMinReferrals, setSilverMinReferrals] = useState("");
+  const [goldMinReferrals, setGoldMinReferrals] = useState("");
+  const [diamondMinReferrals, setDiamondMinReferrals] = useState("");
+  const [monthlyContestPrize1, setMonthlyContestPrize1] = useState("");
+  const [monthlyContestPrize2, setMonthlyContestPrize2] = useState("");
+  const [monthlyContestPrize3, setMonthlyContestPrize3] = useState("");
 
   const { data: deposits = [] } = useQuery<Deposit[]>({
     queryKey: ["/api/deposits"],
@@ -148,7 +162,7 @@ export default function Admin() {
       </div>
 
       <Tabs defaultValue="deposits" dir="rtl">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="deposits" data-testid="tab-admin-deposits">
             <ArrowDownToLine className="w-4 h-4 ml-2" />
             الإيداعات
@@ -156,6 +170,10 @@ export default function Admin() {
           <TabsTrigger value="withdrawals" data-testid="tab-admin-withdrawals">
             <ArrowUpFromLine className="w-4 h-4 ml-2" />
             السحوبات
+          </TabsTrigger>
+          <TabsTrigger value="referrals" data-testid="tab-admin-referrals">
+            <Users className="w-4 h-4 ml-2" />
+            الإحالات
           </TabsTrigger>
           <TabsTrigger value="settings" data-testid="tab-admin-settings">
             <Settings className="w-4 h-4 ml-2" />
@@ -364,6 +382,219 @@ export default function Admin() {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="referrals" className="space-y-4">
+          <Card className="p-6">
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <Users className="w-5 h-5 text-primary" />
+              إعدادات برنامج الإحالات
+            </h3>
+
+            <div className="space-y-6">
+              <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
+                <h4 className="font-semibold mb-3 flex items-center gap-2">
+                  <Gift className="w-4 h-4 text-primary" />
+                  مكافأة الإحالة الأولى
+                </h4>
+                <div>
+                  <Label htmlFor="first-referral-bonus">المكافأة الفورية (USDT)</Label>
+                  <Input
+                    id="first-referral-bonus"
+                    type="number"
+                    value={firstReferralBonus || settings.find(s => s.key === "first_referral_bonus")?.value || "5"}
+                    onChange={(e) => setFirstReferralBonus(e.target.value)}
+                    placeholder="5"
+                    className="mt-2"
+                    data-testid="input-first-referral-bonus"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    المبلغ الذي يحصل عليه المستخدم فور إحالته لأول صديق
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-4 bg-accent/5 rounded-lg border border-accent/20">
+                <h4 className="font-semibold mb-3">نسب العمولات حسب المستويات</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="bronze-commission">برونزي - نسبة العمولة (%)</Label>
+                    <Input
+                      id="bronze-commission"
+                      type="number"
+                      value={bronzeCommission || settings.find(s => s.key === "bronze_commission")?.value || "10"}
+                      onChange={(e) => setBronzeCommission(e.target.value)}
+                      placeholder="10"
+                      className="mt-2"
+                      data-testid="input-bronze-commission"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="silver-commission">فضي - نسبة العمولة (%)</Label>
+                    <Input
+                      id="silver-commission"
+                      type="number"
+                      value={silverCommission || settings.find(s => s.key === "silver_commission")?.value || "15"}
+                      onChange={(e) => setSilverCommission(e.target.value)}
+                      placeholder="15"
+                      className="mt-2"
+                      data-testid="input-silver-commission"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="gold-commission">ذهبي - نسبة العمولة (%)</Label>
+                    <Input
+                      id="gold-commission"
+                      type="number"
+                      value={goldCommission || settings.find(s => s.key === "gold_commission")?.value || "20"}
+                      onChange={(e) => setGoldCommission(e.target.value)}
+                      placeholder="20"
+                      className="mt-2"
+                      data-testid="input-gold-commission"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="diamond-commission">ماسي - نسبة العمولة (%)</Label>
+                    <Input
+                      id="diamond-commission"
+                      type="number"
+                      value={diamondCommission || settings.find(s => s.key === "diamond_commission")?.value || "25"}
+                      onChange={(e) => setDiamondCommission(e.target.value)}
+                      placeholder="25"
+                      className="mt-2"
+                      data-testid="input-diamond-commission"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-muted/30 rounded-lg border">
+                <h4 className="font-semibold mb-3">متطلبات الإحالات للمستويات</h4>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="silver-min">الحد الأدنى لفضي</Label>
+                    <Input
+                      id="silver-min"
+                      type="number"
+                      value={silverMinReferrals || settings.find(s => s.key === "silver_min_referrals")?.value || "6"}
+                      onChange={(e) => setSilverMinReferrals(e.target.value)}
+                      placeholder="6"
+                      className="mt-2"
+                      data-testid="input-silver-min"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="gold-min">الحد الأدنى لذهبي</Label>
+                    <Input
+                      id="gold-min"
+                      type="number"
+                      value={goldMinReferrals || settings.find(s => s.key === "gold_min_referrals")?.value || "16"}
+                      onChange={(e) => setGoldMinReferrals(e.target.value)}
+                      placeholder="16"
+                      className="mt-2"
+                      data-testid="input-gold-min"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="diamond-min">الحد الأدنى لماسي</Label>
+                    <Input
+                      id="diamond-min"
+                      type="number"
+                      value={diamondMinReferrals || settings.find(s => s.key === "diamond_min_referrals")?.value || "31"}
+                      onChange={(e) => setDiamondMinReferrals(e.target.value)}
+                      placeholder="31"
+                      className="mt-2"
+                      data-testid="input-diamond-min"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-gradient-to-br from-yellow-100 dark:from-yellow-950 to-background rounded-lg border border-yellow-300 dark:border-yellow-800">
+                <h4 className="font-semibold mb-3 flex items-center gap-2">
+                  🏆 جوائز المسابقة الشهرية
+                </h4>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="prize-1">المركز الأول (USDT)</Label>
+                    <Input
+                      id="prize-1"
+                      type="number"
+                      value={monthlyContestPrize1 || settings.find(s => s.key === "monthly_contest_prize_1")?.value || "500"}
+                      onChange={(e) => setMonthlyContestPrize1(e.target.value)}
+                      placeholder="500"
+                      className="mt-2"
+                      data-testid="input-prize-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="prize-2">المركز الثاني (USDT)</Label>
+                    <Input
+                      id="prize-2"
+                      type="number"
+                      value={monthlyContestPrize2 || settings.find(s => s.key === "monthly_contest_prize_2")?.value || "300"}
+                      onChange={(e) => setMonthlyContestPrize2(e.target.value)}
+                      placeholder="300"
+                      className="mt-2"
+                      data-testid="input-prize-2"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="prize-3">المركز الثالث (USDT)</Label>
+                    <Input
+                      id="prize-3"
+                      type="number"
+                      value={monthlyContestPrize3 || settings.find(s => s.key === "monthly_contest_prize_3")?.value || "200"}
+                      onChange={(e) => setMonthlyContestPrize3(e.target.value)}
+                      placeholder="200"
+                      className="mt-2"
+                      data-testid="input-prize-3"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                onClick={() => {
+                  if (firstReferralBonus) updateSettingMutation.mutate({ key: "first_referral_bonus", value: firstReferralBonus });
+                  if (bronzeCommission) updateSettingMutation.mutate({ key: "bronze_commission", value: bronzeCommission });
+                  if (silverCommission) updateSettingMutation.mutate({ key: "silver_commission", value: silverCommission });
+                  if (goldCommission) updateSettingMutation.mutate({ key: "gold_commission", value: goldCommission });
+                  if (diamondCommission) updateSettingMutation.mutate({ key: "diamond_commission", value: diamondCommission });
+                  if (silverMinReferrals) updateSettingMutation.mutate({ key: "silver_min_referrals", value: silverMinReferrals });
+                  if (goldMinReferrals) updateSettingMutation.mutate({ key: "gold_min_referrals", value: goldMinReferrals });
+                  if (diamondMinReferrals) updateSettingMutation.mutate({ key: "diamond_min_referrals", value: diamondMinReferrals });
+                  if (monthlyContestPrize1) updateSettingMutation.mutate({ key: "monthly_contest_prize_1", value: monthlyContestPrize1 });
+                  if (monthlyContestPrize2) updateSettingMutation.mutate({ key: "monthly_contest_prize_2", value: monthlyContestPrize2 });
+                  if (monthlyContestPrize3) updateSettingMutation.mutate({ key: "monthly_contest_prize_3", value: monthlyContestPrize3 });
+                }}
+                disabled={updateSettingMutation.isPending}
+                className="w-full"
+                data-testid="button-save-referral-settings"
+              >
+                {updateSettingMutation.isPending ? "جاري الحفظ..." : "حفظ إعدادات الإحالات"}
+              </Button>
+            </div>
+          </Card>
+
+          <Card className="p-6 bg-gradient-to-br from-primary/10 to-background border-primary/30">
+            <h4 className="font-semibold mb-2 flex items-center gap-2">
+              💡 نصائح لتحسين برنامج الإحالات
+            </h4>
+            <ul className="text-sm text-muted-foreground space-y-2">
+              <li>• المكافأة الفورية تحفز المستخدمين على البدء في الإحالة</li>
+              <li>• نظام المستويات يشجع على جلب المزيد من الإحالات</li>
+              <li>• المسابقات الشهرية تخلق منافسة صحية</li>
+              <li>• راجع الإحصائيات بانتظام لتحسين النسب</li>
+            </ul>
+          </Card>
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-4">
