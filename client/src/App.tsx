@@ -14,12 +14,16 @@ import Transactions from "@/pages/Transactions";
 import Referrals from "@/pages/Referrals";
 import Wallet from "@/pages/Wallet";
 import Admin from "@/pages/Admin";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
       <Route path="/home" component={Home} />
       <Route path="/transactions" component={Transactions} />
       <Route path="/referrals" component={Referrals} />
@@ -33,25 +37,27 @@ function Router() {
 function App() {
   const [balance] = useState(25.50);
   const [location] = useLocation();
+  const isAuthPage = location === "/login" || location === "/register";
   const isLandingPage = location === "/";
+  const showNav = !isLandingPage && !isAuthPage;
 
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <TooltipProvider>
-          {!isLandingPage && <MotivationalNotifications />}
+          {showNav && <MotivationalNotifications />}
           <div className="min-h-screen bg-background pb-20 md:pb-6">
-            {!isLandingPage && (
+            {showNav && (
               <AppHeader 
                 onMenuClick={() => console.log('Menu clicked')}
                 notificationCount={3}
                 balance={balance}
               />
             )}
-            <main className={!isLandingPage ? "container max-w-4xl mx-auto px-4 py-6" : ""}>
+            <main className={showNav ? "container max-w-4xl mx-auto px-4 py-6" : ""}>
               <Router />
             </main>
-            {!isLandingPage && <BottomNav />}
+            {showNav && <BottomNav />}
           </div>
           <Toaster />
         </TooltipProvider>

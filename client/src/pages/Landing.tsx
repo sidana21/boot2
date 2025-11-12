@@ -64,9 +64,12 @@ export default function Landing() {
           </div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <Button onClick={() => setLocation('/home')} size="lg" data-testid="button-enter-app">
+            <Button variant="outline" onClick={() => setLocation('/login')} size="lg" data-testid="button-login">
+              تسجيل الدخول
+            </Button>
+            <Button onClick={() => setLocation('/register')} size="lg" data-testid="button-register">
               <ArrowLeft className="w-5 h-5 ml-2" />
-              دخول التطبيق
+              إنشاء حساب
             </Button>
           </div>
         </header>
