@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import WalletBalanceCard from "@/components/WalletBalanceCard";
-import TappingButton from "@/components/TappingButton";
+import TradingBot from "@/components/TradingBot";
 import StatsGrid from "@/components/StatsGrid";
 import CountdownTimer from "@/components/CountdownTimer";
 import LuckyWheel from "@/components/LuckyWheel";
@@ -11,7 +11,6 @@ import { useLocation } from "wouter";
 // TODO: remove mock functionality - replace with real user data
 export default function Home() {
   const [, setLocation] = useLocation();
-  const [taps, setTaps] = useState(0);
   const [depositAmount] = useState(10); // TODO: get from user's actual deposit
   const [balanceUSDT, setBalanceUSDT] = useState(25.50);
   const [balanceRTC, setBalanceRTC] = useState(0);
@@ -21,32 +20,21 @@ export default function Home() {
     return 0.15 + Math.random() * 0.10;
   });
   
-  const maxTaps = 100;
-  const baseEarningPerTap = depositAmount * dailyEarningMultiplier / maxTaps;
-  const rtcPerTap = 10; // 10 RTC per tap
-  
-  const earnedUSDT = taps * baseEarningPerTap;
-  const earnedRTC = taps * rtcPerTap;
+  const dailyTarget = depositAmount * dailyEarningMultiplier;
+  const [earnedToday, setEarnedToday] = useState(0);
   const totalEarnings = 125.50;
-  const isTaskComplete = taps >= maxTaps;
+  const isTaskComplete = earnedToday >= dailyTarget;
 
-  useEffect(() => {
-    // Update balances when taps change
-    setBalanceUSDT(25.50 + earnedUSDT);
-    setBalanceRTC(earnedRTC);
-  }, [taps, earnedUSDT, earnedRTC]);
-
-  const handleTap = () => {
-    if (taps < maxTaps) {
-      setTaps(prev => prev + 1);
-      const newEarning = (taps + 1) * baseEarningPerTap;
-      console.log(`Tap ${taps + 1}/${maxTaps} - Earned: ${newEarning.toFixed(4)} USDT + ${rtcPerTap} RTC`);
-    }
+  const handleEarningsUpdate = (usdtAmount: number, rtcAmount: number) => {
+    setEarnedToday(prev => prev + usdtAmount);
+    setBalanceUSDT(prev => prev + usdtAmount);
+    setBalanceRTC(prev => prev + rtcAmount);
+    console.log(`Trade completed! Earned: ${usdtAmount.toFixed(4)} USDT + ${rtcAmount.toFixed(0)} RTC`);
   };
 
   const handleTimerComplete = () => {
     console.log('Timer completed! Resetting daily task...');
-    setTaps(0);
+    setEarnedToday(0);
     setCanSpinWheel(true);
   };
 
@@ -65,7 +53,7 @@ export default function Home() {
       <WalletBalanceCard
         balanceUSDT={balanceUSDT}
         balanceRTC={balanceRTC}
-        todayEarnings={earnedUSDT}
+        todayEarnings={earnedToday}
         totalEarnings={totalEarnings}
         depositAmount={depositAmount}
       />
@@ -103,12 +91,10 @@ export default function Home() {
       {isTaskComplete ? (
         <CountdownTimer onComplete={handleTimerComplete} />
       ) : (
-        <TappingButton
-          currentTaps={taps}
-          maxTaps={maxTaps}
-          onTap={handleTap}
-          earnedRTC={earnedRTC}
-          earnedUSDT={earnedUSDT}
+        <TradingBot
+          onEarningsUpdate={handleEarningsUpdate}
+          dailyTarget={dailyTarget}
+          currentEarnings={earnedToday}
         />
       )}
 
