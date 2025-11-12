@@ -13,6 +13,7 @@ import { randomUUID } from "crypto";
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
   
@@ -49,6 +50,7 @@ export class MemStorage implements IStorage {
     
     const defaultUser: User = {
       id: DEFAULT_USER_ID,
+      email: "demo@example.com",
       username: "demo_user",
       password: "hashed_password",
       isAdmin: true,
@@ -93,12 +95,19 @@ export class MemStorage implements IStorage {
     );
   }
 
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.email === email,
+    );
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
     const referralCode = `TAP${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
     const user: User = { 
-      ...insertUser, 
+      ...insertUser,
       id,
+      username: null,
       isAdmin: false,
       usdtBalance: "0",
       rtcBalance: "0",
