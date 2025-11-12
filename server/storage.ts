@@ -56,6 +56,10 @@ export class MemStorage implements IStorage {
       rtcBalance: "1000",
       referralCode: "TAPDEMO123",
       depositAmount: "20.00",
+      depositBonus: "0",
+      tradingVolume: "0",
+      bonusWithdrawable: "0",
+      firstDepositBonusUsed: false,
     };
     this.users.set(DEFAULT_USER_ID, defaultUser);
     
@@ -100,6 +104,10 @@ export class MemStorage implements IStorage {
       rtcBalance: "0",
       referralCode,
       depositAmount: "0",
+      depositBonus: "0",
+      tradingVolume: "0",
+      bonusWithdrawable: "0",
+      firstDepositBonusUsed: false,
     };
     this.users.set(id, user);
     return user;

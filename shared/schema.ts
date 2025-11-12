@@ -12,6 +12,10 @@ export const users = pgTable("users", {
   rtcBalance: decimal("rtc_balance", { precision: 18, scale: 2 }).default("0").notNull(),
   referralCode: text("referral_code").unique(),
   depositAmount: decimal("deposit_amount", { precision: 18, scale: 8 }).default("0").notNull(),
+  depositBonus: decimal("deposit_bonus", { precision: 18, scale: 8 }).default("0").notNull(),
+  tradingVolume: decimal("trading_volume", { precision: 18, scale: 8 }).default("0").notNull(),
+  bonusWithdrawable: decimal("bonus_withdrawable", { precision: 18, scale: 8 }).default("0").notNull(),
+  firstDepositBonusUsed: boolean("first_deposit_bonus_used").default(false).notNull(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
