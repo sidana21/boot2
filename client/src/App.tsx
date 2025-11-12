@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
+import MotivationalNotifications from "@/components/MotivationalNotifications";
 import Home from "@/pages/Home";
 import Transactions from "@/pages/Transactions";
 import Referrals from "@/pages/Referrals";
@@ -32,6 +33,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <MotivationalNotifications />
         <div className="min-h-screen bg-background pb-20 md:pb-6">
           <AppHeader 
             onMenuClick={() => console.log('Menu clicked')}
