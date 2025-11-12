@@ -1,21 +1,25 @@
 import { Home, History, Users, Wallet } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { useLanguage } from "@/contexts/LanguageContext";
+import type { TranslationKey } from "@/lib/translations";
 
-const navItems = [
-  { icon: Home, label: "الرئيسية", path: "/home" },
-  { icon: History, label: "المعاملات", path: "/transactions" },
-  { icon: Users, label: "الإحالات", path: "/referrals" },
-  { icon: Wallet, label: "المحفظة", path: "/wallet" },
+const navItems: Array<{ icon: typeof Home; labelKey: TranslationKey; path: string }> = [
+  { icon: Home, labelKey: "home", path: "/home" },
+  { icon: History, labelKey: "transactions", path: "/transactions" },
+  { icon: Users, labelKey: "referrals", path: "/referrals" },
+  { icon: Wallet, labelKey: "wallet", path: "/wallet" },
 ];
 
 export default function BottomNav() {
   const [location] = useLocation();
+  const { t } = useLanguage();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t md:hidden">
       <div className="grid grid-cols-4 h-16">
-        {navItems.map(({ icon: Icon, label, path }) => {
+        {navItems.map(({ icon: Icon, labelKey, path }) => {
           const isActive = location === path;
+          const label = t(labelKey);
           return (
             <Link key={path} href={path}>
               <div

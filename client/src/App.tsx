@@ -4,6 +4,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MotivationalNotifications from "@/components/MotivationalNotifications";
@@ -36,23 +37,25 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        {!isLandingPage && <MotivationalNotifications />}
-        <div className="min-h-screen bg-background pb-20 md:pb-6">
-          {!isLandingPage && (
-            <AppHeader 
-              onMenuClick={() => console.log('Menu clicked')}
-              notificationCount={3}
-              balance={balance}
-            />
-          )}
-          <main className={!isLandingPage ? "container max-w-4xl mx-auto px-4 py-6" : ""}>
-            <Router />
-          </main>
-          {!isLandingPage && <BottomNav />}
-        </div>
-        <Toaster />
-      </TooltipProvider>
+      <LanguageProvider>
+        <TooltipProvider>
+          {!isLandingPage && <MotivationalNotifications />}
+          <div className="min-h-screen bg-background pb-20 md:pb-6">
+            {!isLandingPage && (
+              <AppHeader 
+                onMenuClick={() => console.log('Menu clicked')}
+                notificationCount={3}
+                balance={balance}
+              />
+            )}
+            <main className={!isLandingPage ? "container max-w-4xl mx-auto px-4 py-6" : ""}>
+              <Router />
+            </main>
+            {!isLandingPage && <BottomNav />}
+          </div>
+          <Toaster />
+        </TooltipProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }

@@ -2,6 +2,8 @@ import { Bell, Menu, Wallet, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ThemeToggle from "@/components/ThemeToggle";
+import LanguageToggle from "@/components/LanguageToggle";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "wouter";
 
 interface AppHeaderProps {
@@ -12,6 +14,8 @@ interface AppHeaderProps {
 }
 
 export default function AppHeader({ onMenuClick, notificationCount = 0, balance, isAdmin = true }: AppHeaderProps) {
+  const { t } = useLanguage();
+  
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4">
@@ -28,7 +32,7 @@ export default function AppHeader({ onMenuClick, notificationCount = 0, balance,
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center pulse-soft">
               <Wallet className="w-5 h-5 text-primary-foreground" />
             </div>
-            <h1 className="text-xl font-bold">تطبيق التكبيس</h1>
+            <h1 className="text-xl font-bold">{t('appName')}</h1>
           </div>
         </div>
 
@@ -36,7 +40,7 @@ export default function AppHeader({ onMenuClick, notificationCount = 0, balance,
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full">
             <Wallet className="w-4 h-4 text-accent" />
             <span className="text-sm font-semibold tabular-nums">{balance.toFixed(2)}</span>
-            <span className="text-xs text-muted-foreground">USDT</span>
+            <span className="text-xs text-muted-foreground">{t('usdt')}</span>
           </div>
           
           {isAdmin && (
@@ -52,6 +56,7 @@ export default function AppHeader({ onMenuClick, notificationCount = 0, balance,
             </Link>
           )}
           
+          <LanguageToggle />
           <ThemeToggle />
           
           <Button 

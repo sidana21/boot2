@@ -140,7 +140,6 @@ export default function TradingBot({
       intervalRef.current = setInterval(() => {
         setCycleCountdown(prev => {
           if (prev <= 1) {
-            completeCycle();
             return 0;
           }
           return prev - 1;
@@ -152,6 +151,12 @@ export default function TradingBot({
       };
     }
   }, [isActive]);
+
+  useEffect(() => {
+    if (isActive && cycleCountdown === 0 && !showResults && currentTrades.length > 0) {
+      completeCycle();
+    }
+  }, [isActive, cycleCountdown, showResults, currentTrades.length]);
 
   useEffect(() => {
     if (currentEarnings >= dailyTarget && isActive) {
