@@ -1,7 +1,9 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
+import bcrypt from "bcryptjs";
+import passport from "./auth";
 import { storage, DEFAULT_USER_ID } from "./storage";
-import { insertDepositSchema, insertWithdrawalSchema, insertSystemSettingSchema } from "@shared/schema";
+import { insertDepositSchema, insertWithdrawalSchema, insertSystemSettingSchema, insertUserSchema, loginSchema } from "@shared/schema";
 
 function adminMiddleware(req: Request, res: Response, next: NextFunction) {
   if (process.env.NODE_ENV === "development") {
@@ -18,6 +20,76 @@ function adminMiddleware(req: Request, res: Response, next: NextFunction) {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const validated = insertUserSchema.parse(req.body);
+      
+      const existingUser = await storage.getUserByEmail(validated.email);
+      if (existingUser) {
+        return res.status(400).json({ error: "البريد الإلكتروني مستخدم بالفعل" });
+      }
+
+      const hashedPassword = await bcrypt.hash(validated.password, 10);
+      
+      const user = await storage.createUser({
+        email: validated.email,
+        password: hashedPassword,
+      });
+
+      req.login(user, (err) => {
+        if (err) {
+          return res.status(500).json({ error: "خطأ في تسجيل الدخول" });
+        }
+        const { password: _, ...userWithoutPassword } = user;
+        res.json(userWithoutPassword);
+      });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/auth/login", (req, res, next) => {
+    try {
+      loginSchema.parse(req.body);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    passport.authenticate("local", (err: any, user: any, info: any) => {
+      if (err) {
+        return res.status(500).json({ error: "خطأ في تسجيل الدخول" });
+      }
+      if (!user) {
+        return res.status(401).json({ error: info?.message || "البريد الإلكتروني أو كلمة المرور غير صحيحة" });
+      }
+      req.login(user, (err) => {
+        if (err) {
+          return res.status(500).json({ error: "خطأ في تسجيل الدخول" });
+        }
+        const { password: _, ...userWithoutPassword } = user;
+        res.json(userWithoutPassword);
+      });
+    })(req, res, next);
+  });
+
+  app.post("/api/auth/logout", (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        return res.status(500).json({ error: "خطأ في تسجيل الخروج" });
+      }
+      res.json({ success: true });
+    });
+  });
+
+  app.get("/api/auth/user", (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "غير مسجل الدخول" });
+    }
+    const user = req.user as any;
+    const { password: _, ...userWithoutPassword } = user;
+    res.json(userWithoutPassword);
+  });
+
   app.get("/api/current-user", async (req, res) => {
     try {
       const user = await storage.getUser(DEFAULT_USER_ID);
