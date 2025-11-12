@@ -1,9 +1,10 @@
-import { Bell, Menu, Wallet, Shield } from "lucide-react";
+import { Bell, Menu, Wallet, Shield, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ThemeToggle from "@/components/ThemeToggle";
 import LanguageToggle from "@/components/LanguageToggle";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "wouter";
 
 interface AppHeaderProps {
@@ -15,6 +16,7 @@ interface AppHeaderProps {
 
 export default function AppHeader({ onMenuClick, notificationCount = 0, balance, isAdmin = true }: AppHeaderProps) {
   const { t } = useLanguage();
+  const { logout } = useAuth();
   
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -74,6 +76,15 @@ export default function AppHeader({ onMenuClick, notificationCount = 0, balance,
                 {notificationCount}
               </Badge>
             )}
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={logout}
+            data-testid="button-logout"
+          >
+            <LogOut className="w-5 h-5" />
           </Button>
         </div>
       </div>
