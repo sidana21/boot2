@@ -1,11 +1,10 @@
-import { useState } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MotivationalNotifications from "@/components/MotivationalNotifications";
@@ -35,33 +34,43 @@ function Router() {
   );
 }
 
-function App() {
-  const [balance] = useState(25.50);
+function AppContent() {
   const [location] = useLocation();
+  const { user } = useAuth();
   const isAuthPage = location === "/login" || location === "/register";
   const isLandingPage = location === "/";
   const showNav = !isLandingPage && !isAuthPage;
 
+  const balance = parseFloat(user?.usdtBalance || "0");
+
+  return (
+    <>
+      {showNav && <MotivationalNotifications />}
+      <div className="min-h-screen bg-background pb-20 md:pb-6">
+        {showNav && (
+          <AppHeader 
+            onMenuClick={() => console.log('Menu clicked')}
+            notificationCount={0}
+            balance={balance}
+          />
+        )}
+        <main className={showNav ? "container max-w-4xl mx-auto px-4 py-6" : ""}>
+          <Router />
+        </main>
+        {showNav && <BottomNav />}
+      </div>
+      <Toaster />
+    </>
+  );
+}
+
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <LanguageProvider>
           <TooltipProvider>
-            {showNav && <MotivationalNotifications />}
-            <div className="min-h-screen bg-background pb-20 md:pb-6">
-              {showNav && (
-                <AppHeader 
-                  onMenuClick={() => console.log('Menu clicked')}
-                  notificationCount={3}
-                  balance={balance}
-                />
-              )}
-              <main className={showNav ? "container max-w-4xl mx-auto px-4 py-6" : ""}>
-                <Router />
-              </main>
-              {showNav && <BottomNav />}
-            </div>
-            <Toaster />
+            <AppContent />
           </TooltipProvider>
         </LanguageProvider>
       </AuthProvider>

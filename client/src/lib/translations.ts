@@ -183,6 +183,22 @@ export const translations = {
     noReferralsDesc: 'ابدأ بدعوة أصدقائك واربح عمولات من أرباحهم!',
     startSharing: 'ابدأ المشاركة',
     
+    // No Deposit Message
+    welcomeToTradingPlatform: 'مرحباً بك في منصة التداول',
+    needDepositToStart: 'للبدء في الربح اليومي، تحتاج أولاً لعمل إيداع',
+    depositUSDTMin: 'قم بإيداع USDT (الحد الأدنى {min} دولار)',
+    runBotToTrade: 'شغّل البوت ليتداول تلقائياً على أشهر المنصات',
+    earnDailyPercent: 'اربح من {min}% إلى {max}% يومياً من رصيد إيداعك',
+    withdrawAnytimeMin: 'اسحب أرباحك في أي وقت (الحد الأدنى {min} دولار)',
+    highProfitRate: 'نسبة ربح عالية',
+    dailyGuaranteedReturn: 'عائد يومي مضمون',
+    easyStart: 'بداية سهلة',
+    minDepositLabel: 'الحد الأدنى للإيداع',
+    firstDepositBonusLabel: 'مكافأة الإيداع الأول',
+    getFirstDepositBonus: 'احصل على {percent}% بونص على أول إيداع لك البونص قابل للسحب بعد إتمام حجم تداول يعادل {multiplier} أضعاف الإيداع',
+    startDepositNow: 'ابدأ الإيداع الآن',
+    afterDepositCanStart: 'بعد الإيداع، ستتمكن من تشغيل البوت والبدء في الربح فوراً',
+    
     // Login & Register
     loginTitle: 'تسجيل الدخول',
     loginDesc: 'أدخل بريدك الإلكتروني وكلمة المرور للوصول إلى حسابك',
@@ -381,6 +397,22 @@ export const translations = {
     noReferralsTitle: 'No Referrals Yet',
     noReferralsDesc: 'Start inviting your friends and earn commissions from their earnings!',
     startSharing: 'Start Sharing',
+    
+    // No Deposit Message
+    welcomeToTradingPlatform: 'Welcome to the Trading Platform',
+    needDepositToStart: 'To start earning daily profits, you first need to make a deposit',
+    depositUSDTMin: 'Deposit USDT (minimum {min} USD)',
+    runBotToTrade: 'Run the bot to trade automatically on top platforms',
+    earnDailyPercent: 'Earn {min}% to {max}% daily from your deposit balance',
+    withdrawAnytimeMin: 'Withdraw your earnings anytime (minimum {min} USD)',
+    highProfitRate: 'High Profit Rate',
+    dailyGuaranteedReturn: 'Guaranteed daily return',
+    easyStart: 'Easy Start',
+    minDepositLabel: 'Minimum Deposit',
+    firstDepositBonusLabel: 'First Deposit Bonus',
+    getFirstDepositBonus: 'Get {percent}% bonus on your first deposit The bonus is withdrawable after completing trading volume equal to {multiplier} times the deposit',
+    startDepositNow: 'Start Depositing Now',
+    afterDepositCanStart: 'After depositing, you can run the bot and start earning immediately',
     
     // Login & Register
     loginTitle: 'Login',

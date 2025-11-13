@@ -4,8 +4,8 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { User } from "@shared/schema";
 import WalletBalanceCard from "@/components/WalletBalanceCard";
 import TradingBot from "@/components/TradingBot";
-import StatsGrid from "@/components/StatsGrid";
 import CountdownTimer from "@/components/CountdownTimer";
+import NoDepositMessage from "@/components/NoDepositMessage";
 import TreasureBox from "@/components/TreasureBox";
 import { Button } from "@/components/ui/button";
 import { ArrowDownToLine, ArrowUpFromLine, Users } from "lucide-react";
@@ -112,7 +112,9 @@ export default function Home() {
         </Button>
       </div>
 
-      {isTaskComplete ? (
+      {depositAmount === 0 ? (
+        <NoDepositMessage />
+      ) : isTaskComplete ? (
         <CountdownTimer onComplete={handleTimerComplete} />
       ) : (
         <TradingBot
@@ -130,21 +132,17 @@ export default function Home() {
         isFirstDeposit={!user.firstDepositBonusUsed}
       />
 
-      <StatsGrid
-        referralsCount={12}
-        referralEarnings={24.50}
-        weeklyEarnings={70.00}
-        daysActive={15}
-      />
 
-      <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
-        <p className="text-sm text-center">
-          💰 <span className="font-semibold">{t('profitPercentageToday')}</span> {(dailyEarningMultiplier * 100).toFixed(1)}% {t('fromYourDeposit')}
-        </p>
-        <p className="text-xs text-center text-muted-foreground mt-1">
-          {t('profitChangesDaily')}
-        </p>
-      </div>
+      {depositAmount > 0 && (
+        <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
+          <p className="text-sm text-center">
+            💰 <span className="font-semibold">{t('profitPercentageToday')}</span> {(dailyEarningMultiplier * 100).toFixed(1)}% {t('fromYourDeposit')}
+          </p>
+          <p className="text-xs text-center text-muted-foreground mt-1">
+            {t('profitChangesDaily')}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
