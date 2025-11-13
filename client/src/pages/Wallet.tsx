@@ -44,7 +44,9 @@ export default function Wallet() {
   const currentBalanceUSDT = parseFloat(currentUser?.usdtBalance || "0");
   const currentBalanceRTC = parseFloat(currentUser?.rtcBalance || "0");
   const totalDeposits = parseFloat(currentUser?.depositAmount || "0");
-  const totalWithdrawals = 0;
+  const totalWithdrawals = withdrawals
+    .filter(w => w.status === "completed")
+    .reduce((sum, w) => sum + parseFloat(w.amount), 0);
 
   const createDepositMutation = useMutation({
     mutationFn: async (depositData: InsertDeposit) => {
@@ -291,6 +293,7 @@ export default function Wallet() {
             minDeposit={5}
             minWithdraw={10}
             withdrawFee={0.5}
+            selectedNetwork={selectedNetwork}
           />
         </TabsContent>
       </Tabs>

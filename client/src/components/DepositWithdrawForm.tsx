@@ -16,13 +16,15 @@ interface DepositWithdrawFormProps {
   minDeposit?: number;
   minWithdraw?: number;
   withdrawFee?: number;
+  selectedNetwork: "TRC20" | "ETH";
 }
 
 export default function DepositWithdrawForm({ 
   currentBalance,
   minDeposit = 5,
   minWithdraw = 10,
-  withdrawFee = 0.5
+  withdrawFee = 0.5,
+  selectedNetwork
 }: DepositWithdrawFormProps) {
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -98,7 +100,7 @@ export default function DepositWithdrawForm({
       amount: withdrawAmount,
       address: withdrawAddress,
       status: "pending",
-      network: "TRC20",
+      network: selectedNetwork,
       fee: withdrawFee.toString(),
       txHash: null,
     };
@@ -131,10 +133,12 @@ export default function DepositWithdrawForm({
         </div>
 
         <div>
-          <Label htmlFor="withdraw-address">عنوان المحفظة (TRC20)</Label>
+          <Label htmlFor="withdraw-address">
+            عنوان المحفظة ({selectedNetwork === "TRC20" ? "TRC20" : "ETH"})
+          </Label>
           <Input
             id="withdraw-address"
-            placeholder="T..."
+            placeholder={selectedNetwork === "TRC20" ? "T..." : "0x..."}
             value={withdrawAddress}
             onChange={(e) => setWithdrawAddress(e.target.value)}
             className="font-mono mt-2"
