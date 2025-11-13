@@ -6,9 +6,14 @@ import {
   type Withdrawal, 
   type InsertWithdrawal,
   type SystemSetting,
-  type InsertSystemSetting
+  type InsertSystemSetting,
+  users,
+  deposits,
+  withdrawals,
+  systemSettings
 } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -36,99 +41,80 @@ export interface IStorage {
   getAllSettings(): Promise<SystemSetting[]>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-  private deposits: Map<string, Deposit>;
-  private withdrawals: Map<string, Withdrawal>;
-  private settings: Map<string, SystemSetting>;
-  private adminEmails: Set<string>;
+const ADMIN_EMAILS = new Set(['abooh052@gmail.com']);
 
-  constructor() {
-    this.users = new Map();
-    this.deposits = new Map();
-    this.withdrawals = new Map();
-    this.settings = new Map();
-    this.adminEmails = new Set(['abooh052@gmail.com']);
+export class DatabaseStorage implements IStorage {
+  private initialized = false;
+
+  async init() {
+    if (this.initialized) return;
     
-    this.settings.set("deposit_address", {
-      id: randomUUID(),
-      key: "deposit_address",
-      value: "TXYZexampleAddressForUSDTDeposits12345",
-      updatedAt: new Date(),
-    });
-    this.settings.set("eth_deposit_address", {
-      id: randomUUID(),
-      key: "eth_deposit_address",
-      value: "0xExampleETHAddressForDeposits123456789",
-      updatedAt: new Date(),
-    });
-    this.settings.set("binance_api_key", {
-      id: randomUUID(),
-      key: "binance_api_key",
-      value: "",
-      updatedAt: new Date(),
-    });
-    this.settings.set("binance_api_secret", {
-      id: randomUUID(),
-      key: "binance_api_secret",
-      value: "",
-      updatedAt: new Date(),
-    });
+    const existingSettings = await this.getAllSettings();
+    if (existingSettings.length === 0) {
+      await this.setSetting({
+        key: "deposit_address",
+        value: "TXYZexampleAddressForUSDTDeposits12345",
+      });
+      await this.setSetting({
+        key: "eth_deposit_address",
+        value: "0xExampleETHAddressForDeposits123456789",
+      });
+      await this.setSetting({
+        key: "binance_api_key",
+        value: "",
+      });
+      await this.setSetting({
+        key: "binance_api_secret",
+        value: "",
+      });
+    }
+    
+    this.initialized = true;
   }
 
   async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    if (!username) return undefined;
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.email === email,
-    );
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const referralCode = `TAP${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
-    const isAdmin = this.adminEmails.has(insertUser.email);
-    const user: User = { 
-      ...insertUser,
-      id,
-      username: null,
-      isAdmin,
-      usdtBalance: "0",
-      rtcBalance: "0",
-      referralCode,
-      depositAmount: "0",
-      depositBonus: "0",
-      tradingVolume: "0",
-      bonusWithdrawable: "0",
-      firstDepositBonusUsed: false,
-    };
-    this.users.set(id, user);
+    const isAdmin = ADMIN_EMAILS.has(insertUser.email);
+    const [user] = await db
+      .insert(users)
+      .values({
+        ...insertUser,
+        isAdmin,
+      })
+      .returning();
     return user;
   }
 
   async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
-    const user = this.users.get(id);
-    if (!user) return undefined;
-    
-    const updatedUser = { ...user, ...updates };
-    this.users.set(id, updatedUser);
-    return updatedUser;
+    const [user] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
   }
 
   async getAllUsers(): Promise<User[]> {
-    return Array.from(this.users.values());
+    return await db.select().from(users);
   }
 
   async getUserStats(): Promise<{ totalUsers: number; activeUsers: number }> {
-    const allUsers = Array.from(this.users.values());
+    const allUsers = await this.getAllUsers();
     const totalUsers = allUsers.length;
     const activeUsers = allUsers.filter(user => 
       parseFloat(user.usdtBalance) > 0 || parseFloat(user.depositAmount) > 0
@@ -138,105 +124,103 @@ export class MemStorage implements IStorage {
   }
 
   async createDeposit(insertDeposit: InsertDeposit): Promise<Deposit> {
-    const id = randomUUID();
-    const deposit: Deposit = {
-      id,
-      userId: insertDeposit.userId,
-      amount: insertDeposit.amount,
-      status: insertDeposit.status || "pending",
-      txHash: insertDeposit.txHash || null,
-      network: insertDeposit.network || "TRC20",
-      createdAt: new Date(),
-      confirmedAt: null,
-    };
-    this.deposits.set(id, deposit);
+    const [deposit] = await db
+      .insert(deposits)
+      .values(insertDeposit)
+      .returning();
     return deposit;
   }
 
   async getDeposit(id: string): Promise<Deposit | undefined> {
-    return this.deposits.get(id);
+    const [deposit] = await db.select().from(deposits).where(eq(deposits.id, id));
+    return deposit || undefined;
   }
 
   async getDepositsByUserId(userId: string): Promise<Deposit[]> {
-    return Array.from(this.deposits.values()).filter(d => d.userId === userId);
+    return await db.select().from(deposits).where(eq(deposits.userId, userId));
   }
 
   async getAllDeposits(): Promise<Deposit[]> {
-    return Array.from(this.deposits.values());
+    return await db.select().from(deposits);
   }
 
   async updateDeposit(id: string, updates: Partial<Deposit>): Promise<Deposit | undefined> {
-    const deposit = this.deposits.get(id);
-    if (!deposit) return undefined;
-    
-    const updatedDeposit = { ...deposit, ...updates };
-    if (updates.status === "confirmed") {
-      updatedDeposit.confirmedAt = new Date();
+    if (updates.status === "confirmed" && !updates.confirmedAt) {
+      updates.confirmedAt = new Date();
     }
-    this.deposits.set(id, updatedDeposit);
-    return updatedDeposit;
+    
+    const [deposit] = await db
+      .update(deposits)
+      .set(updates)
+      .where(eq(deposits.id, id))
+      .returning();
+    return deposit || undefined;
   }
 
   async createWithdrawal(insertWithdrawal: InsertWithdrawal): Promise<Withdrawal> {
-    const id = randomUUID();
-    const withdrawal: Withdrawal = {
-      id,
-      userId: insertWithdrawal.userId,
-      amount: insertWithdrawal.amount,
-      address: insertWithdrawal.address,
-      status: insertWithdrawal.status || "pending",
-      txHash: insertWithdrawal.txHash || null,
-      network: insertWithdrawal.network || "TRC20",
-      fee: insertWithdrawal.fee || "0.5",
-      createdAt: new Date(),
-      processedAt: null,
-    };
-    this.withdrawals.set(id, withdrawal);
+    const [withdrawal] = await db
+      .insert(withdrawals)
+      .values(insertWithdrawal)
+      .returning();
     return withdrawal;
   }
 
   async getWithdrawal(id: string): Promise<Withdrawal | undefined> {
-    return this.withdrawals.get(id);
+    const [withdrawal] = await db.select().from(withdrawals).where(eq(withdrawals.id, id));
+    return withdrawal || undefined;
   }
 
   async getWithdrawalsByUserId(userId: string): Promise<Withdrawal[]> {
-    return Array.from(this.withdrawals.values()).filter(w => w.userId === userId);
+    return await db.select().from(withdrawals).where(eq(withdrawals.userId, userId));
   }
 
   async getAllWithdrawals(): Promise<Withdrawal[]> {
-    return Array.from(this.withdrawals.values());
+    return await db.select().from(withdrawals);
   }
 
   async updateWithdrawal(id: string, updates: Partial<Withdrawal>): Promise<Withdrawal | undefined> {
-    const withdrawal = this.withdrawals.get(id);
-    if (!withdrawal) return undefined;
-    
-    const updatedWithdrawal = { ...withdrawal, ...updates };
-    if (updates.status === "completed") {
-      updatedWithdrawal.processedAt = new Date();
+    if (updates.status === "completed" && !updates.processedAt) {
+      updates.processedAt = new Date();
     }
-    this.withdrawals.set(id, updatedWithdrawal);
-    return updatedWithdrawal;
+    
+    const [withdrawal] = await db
+      .update(withdrawals)
+      .set(updates)
+      .where(eq(withdrawals.id, id))
+      .returning();
+    return withdrawal || undefined;
   }
 
   async getSetting(key: string): Promise<SystemSetting | undefined> {
-    return this.settings.get(key);
+    const [setting] = await db.select().from(systemSettings).where(eq(systemSettings.key, key));
+    return setting || undefined;
   }
 
   async setSetting(insertSetting: InsertSystemSetting): Promise<SystemSetting> {
-    const existing = this.settings.get(insertSetting.key);
-    const setting: SystemSetting = {
-      id: existing?.id || randomUUID(),
-      ...insertSetting,
-      updatedAt: new Date(),
-    };
-    this.settings.set(insertSetting.key, setting);
-    return setting;
+    const existing = await this.getSetting(insertSetting.key);
+    
+    if (existing) {
+      const [setting] = await db
+        .update(systemSettings)
+        .set({ ...insertSetting, updatedAt: new Date() })
+        .where(eq(systemSettings.key, insertSetting.key))
+        .returning();
+      return setting;
+    } else {
+      const [setting] = await db
+        .insert(systemSettings)
+        .values(insertSetting)
+        .returning();
+      return setting;
+    }
   }
 
   async getAllSettings(): Promise<SystemSetting[]> {
-    return Array.from(this.settings.values());
+    return await db.select().from(systemSettings);
   }
 }
 
-export const storage = new MemStorage();
+const dbStorage = new DatabaseStorage();
+dbStorage.init().catch(console.error);
+
+export const storage = dbStorage;
