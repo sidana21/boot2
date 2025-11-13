@@ -54,7 +54,7 @@ function AppContent() {
             balance={balance}
           />
         )}
-        <main className={showNav ? "container max-w-4xl mx-auto px-4 py-6" : ""}>
+        <main className={showNav ? "container max-w-4xl mx-auto px-3 md:px-4 py-4 md:py-6" : ""}>
           <Router />
         </main>
         {showNav && <BottomNav />}

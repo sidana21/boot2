@@ -103,52 +103,52 @@ export default function Wallet() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="p-3 rounded-full bg-accent/10 pulse-soft">
-          <WalletIcon className="w-6 h-6 text-accent" />
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex items-center gap-2 md:gap-3">
+        <div className="p-2 md:p-3 rounded-full bg-accent/10 pulse-soft">
+          <WalletIcon className="w-5 h-5 md:w-6 md:h-6 text-accent" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">{t('walletTitle')}</h1>
-          <p className="text-sm text-muted-foreground">{t('manageBalance')}</p>
+          <h1 className="text-xl md:text-2xl font-bold">{t('walletTitle')}</h1>
+          <p className="text-xs md:text-sm text-muted-foreground">{t('manageBalance')}</p>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-4 gap-4">
-        <Card className="p-4 bg-gradient-to-br from-primary/10 to-background">
-          <div className="flex items-center gap-2 mb-2">
-            <WalletIcon className="w-4 h-4 text-primary" />
-            <p className="text-sm text-muted-foreground">{t('usdtBalanceLabel')}</p>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+        <Card className="p-3 md:p-4 bg-gradient-to-br from-primary/10 to-background">
+          <div className="flex items-center gap-1.5 md:gap-2 mb-1 md:mb-2">
+            <WalletIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" />
+            <p className="text-xs md:text-sm text-muted-foreground">{t('usdtBalanceLabel')}</p>
           </div>
-          <p className="text-3xl font-bold tabular-nums text-primary">{currentBalanceUSDT.toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">{t('usdt')}</p>
+          <p className="text-xl md:text-3xl font-bold tabular-nums text-primary">{currentBalanceUSDT.toFixed(2)}</p>
+          <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1">{t('usdt')}</p>
         </Card>
 
-        <Card className="p-4 bg-gradient-to-br from-secondary/10 to-background">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-4 h-4 text-secondary" />
-            <p className="text-sm text-muted-foreground">{t('rtcBalanceLabel')}</p>
+        <Card className="p-3 md:p-4 bg-gradient-to-br from-secondary/10 to-background">
+          <div className="flex items-center gap-1.5 md:gap-2 mb-1 md:mb-2">
+            <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 text-secondary" />
+            <p className="text-xs md:text-sm text-muted-foreground">{t('rtcBalanceLabel')}</p>
           </div>
-          <p className="text-3xl font-bold tabular-nums text-secondary">{currentBalanceRTC.toFixed(0)}</p>
-          <p className="text-xs text-muted-foreground mt-1">RTC Coin</p>
+          <p className="text-xl md:text-3xl font-bold tabular-nums text-secondary">{currentBalanceRTC.toFixed(0)}</p>
+          <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1">RTC Coin</p>
         </Card>
 
-        <Card className="p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <ArrowDownToLine className="w-4 h-4 text-accent" />
-            <p className="text-sm text-muted-foreground">{t('totalDeposits')}</p>
+        <Card className="p-3 md:p-4">
+          <div className="flex items-center gap-1.5 md:gap-2 mb-1 md:mb-2">
+            <ArrowDownToLine className="w-3.5 h-3.5 md:w-4 md:h-4 text-accent" />
+            <p className="text-xs md:text-sm text-muted-foreground">{t('totalDeposits')}</p>
           </div>
-          <p className="text-3xl font-bold text-accent tabular-nums">{totalDeposits.toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">{t('usdt')}</p>
+          <p className="text-xl md:text-3xl font-bold text-accent tabular-nums">{totalDeposits.toFixed(2)}</p>
+          <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1">{t('usdt')}</p>
         </Card>
 
-        <Card className="p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <ArrowUpFromLine className="w-4 h-4 text-destructive" />
-            <p className="text-sm text-muted-foreground">{t('totalWithdrawals')}</p>
+        <Card className="p-3 md:p-4">
+          <div className="flex items-center gap-1.5 md:gap-2 mb-1 md:mb-2">
+            <ArrowUpFromLine className="w-3.5 h-3.5 md:w-4 md:h-4 text-destructive" />
+            <p className="text-xs md:text-sm text-muted-foreground">{t('totalWithdrawals')}</p>
           </div>
-          <p className="text-3xl font-bold tabular-nums">{totalWithdrawals.toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">{t('usdt')}</p>
+          <p className="text-xl md:text-3xl font-bold tabular-nums">{totalWithdrawals.toFixed(2)}</p>
+          <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1">{t('usdt')}</p>
         </Card>
       </div>
 
@@ -164,13 +164,13 @@ export default function Wallet() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="deposit" className="space-y-4">
-          <Card className="p-4">
-            <Label className="text-sm font-semibold mb-3 block">{t('selectNetwork')}</Label>
-            <div className="grid grid-cols-2 gap-3">
+        <TabsContent value="deposit" className="space-y-3 md:space-y-4">
+          <Card className="p-3 md:p-4">
+            <Label className="text-xs md:text-sm font-semibold mb-2 md:mb-3 block">{t('selectNetwork')}</Label>
+            <div className="grid grid-cols-2 gap-2 md:gap-3">
               <Button
                 variant={selectedNetwork === "TRC20" ? "default" : "outline"}
-                className="w-full"
+                className="w-full text-xs md:text-sm"
                 onClick={() => setSelectedNetwork("TRC20")}
                 data-testid="button-select-usdt"
               >
@@ -178,7 +178,7 @@ export default function Wallet() {
               </Button>
               <Button
                 variant={selectedNetwork === "ETH" ? "default" : "outline"}
-                className="w-full"
+                className="w-full text-xs md:text-sm"
                 onClick={() => setSelectedNetwork("ETH")}
                 data-testid="button-select-eth"
               >
@@ -194,10 +194,10 @@ export default function Wallet() {
           />
           
           {!showVerificationTimer && (
-            <Card className="p-4">
-              <div className="space-y-4">
+            <Card className="p-3 md:p-4">
+              <div className="space-y-3 md:space-y-4">
                 <div>
-                  <Label htmlFor="deposit-amount">{t('depositAmountLabel')}</Label>
+                  <Label htmlFor="deposit-amount" className="text-xs md:text-sm">{t('depositAmountLabel')}</Label>
                   <Input
                     id="deposit-amount"
                     type="number"
@@ -206,14 +206,15 @@ export default function Wallet() {
                     placeholder={t('enterDepositAmount')}
                     value={depositAmount}
                     onChange={(e) => setDepositAmount(e.target.value)}
+                    className="text-sm md:text-base"
                     data-testid="input-deposit-amount"
                   />
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
                     {t('minimumAmount', { min: '5' })}
                   </p>
                 </div>
                 <Button
-                  className="w-full"
+                  className="w-full text-sm md:text-base"
                   onClick={handleStartVerification}
                   disabled={createDepositMutation.isPending}
                   data-testid="button-start-verification"
@@ -239,7 +240,7 @@ export default function Wallet() {
           )}
         </TabsContent>
 
-        <TabsContent value="withdraw" className="space-y-4">
+        <TabsContent value="withdraw" className="space-y-3 md:space-y-4">
           {currentBalanceUSDT < 10 && (
             <Card className="p-4 bg-destructive/10 border-destructive/30">
               <div className="flex items-center gap-2">

@@ -18,29 +18,30 @@ export default function AppHeader({ onMenuClick, notificationCount = 0, balance 
   
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-3">
+      <div className="container flex h-14 md:h-16 items-center justify-between px-3 md:px-4">
+        <div className="flex items-center gap-1.5 md:gap-2">
           <Button 
             variant="ghost" 
             size="icon"
             onClick={onMenuClick}
+            className="h-8 w-8 md:h-9 md:w-9 md:flex"
             data-testid="button-menu"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-4 h-4 md:w-5 md:h-5" />
           </Button>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center pulse-soft">
-              <Wallet className="w-5 h-5 text-primary-foreground" />
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-primary flex items-center justify-center pulse-soft">
+              <Wallet className="w-4 h-4 md:w-5 md:h-5 text-primary-foreground" />
             </div>
-            <h1 className="text-xl font-bold">{t('appName')}</h1>
+            <h1 className="text-base md:text-xl font-bold">{t('appName')}</h1>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full">
-            <Wallet className="w-4 h-4 text-accent" />
-            <span className="text-sm font-semibold tabular-nums">{balance.toFixed(2)}</span>
-            <span className="text-xs text-muted-foreground">{t('usdt')}</span>
+        <div className="flex items-center gap-1 md:gap-2">
+          <div className="flex items-center gap-1.5 px-2 py-1 md:px-3 md:py-1.5 bg-muted rounded-full">
+            <Wallet className="w-3.5 h-3.5 md:w-4 md:h-4 text-accent" />
+            <span className="text-xs md:text-sm font-semibold tabular-nums">{balance.toFixed(2)}</span>
+            <span className="text-[10px] md:text-xs text-muted-foreground">{t('usdt')}</span>
           </div>
           
           <LanguageToggle />
@@ -49,14 +50,14 @@ export default function AppHeader({ onMenuClick, notificationCount = 0, balance 
           <Button 
             variant="ghost" 
             size="icon"
-            className="relative"
+            className="relative h-8 w-8 md:h-9 md:w-9"
             data-testid="button-notifications"
           >
-            <Bell className="w-5 h-5" />
+            <Bell className="w-4 h-4 md:w-5 md:h-5" />
             {notificationCount > 0 && (
               <Badge 
                 variant="destructive" 
-                className="absolute -top-1 -left-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                className="absolute -top-1 -left-1 h-4 w-4 md:h-5 md:w-5 rounded-full p-0 flex items-center justify-center text-[10px] md:text-xs"
               >
                 {notificationCount}
               </Badge>
@@ -67,9 +68,10 @@ export default function AppHeader({ onMenuClick, notificationCount = 0, balance 
             variant="ghost" 
             size="icon"
             onClick={logout}
+            className="h-8 w-8 md:h-9 md:w-9"
             data-testid="button-logout"
           >
-            <LogOut className="w-5 h-5" />
+            <LogOut className="w-4 h-4 md:w-5 md:h-5" />
           </Button>
         </div>
       </div>

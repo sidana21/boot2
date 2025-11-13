@@ -73,7 +73,7 @@ export default function Home() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <WalletBalanceCard
         balanceUSDT={parseFloat(user.usdtBalance)}
         balanceRTC={parseFloat(user.rtcBalance)}
@@ -82,33 +82,33 @@ export default function Home() {
         depositAmount={depositAmount}
       />
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 md:gap-3">
         <Button
           variant="outline"
-          className="flex flex-col gap-2 h-auto py-4 hover-elevate pulse-soft"
+          className="flex flex-col gap-1 md:gap-2 h-auto py-3 md:py-4 hover-elevate pulse-soft"
           onClick={() => setLocation('/wallet')}
           data-testid="button-goto-deposit"
         >
-          <ArrowDownToLine className="w-5 h-5 text-accent" />
-          <span className="text-sm">{t('deposit')}</span>
+          <ArrowDownToLine className="w-4 h-4 md:w-5 md:h-5 text-accent" />
+          <span className="text-xs md:text-sm">{t('deposit')}</span>
         </Button>
         <Button
           variant="outline"
-          className="flex flex-col gap-2 h-auto py-4 hover-elevate pulse-soft"
+          className="flex flex-col gap-1 md:gap-2 h-auto py-3 md:py-4 hover-elevate pulse-soft"
           onClick={() => setLocation('/wallet')}
           data-testid="button-goto-withdraw"
         >
-          <ArrowUpFromLine className="w-5 h-5 text-destructive" />
-          <span className="text-sm">{t('withdraw')}</span>
+          <ArrowUpFromLine className="w-4 h-4 md:w-5 md:h-5 text-destructive" />
+          <span className="text-xs md:text-sm">{t('withdraw')}</span>
         </Button>
         <Button
           variant="outline"
-          className="flex flex-col gap-2 h-auto py-4 hover-elevate pulse-soft"
+          className="flex flex-col gap-1 md:gap-2 h-auto py-3 md:py-4 hover-elevate pulse-soft"
           onClick={() => setLocation('/referrals')}
           data-testid="button-goto-referrals"
         >
-          <Users className="w-5 h-5 text-primary" />
-          <span className="text-sm">{t('invite')}</span>
+          <Users className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+          <span className="text-xs md:text-sm">{t('invite')}</span>
         </Button>
       </div>
 
@@ -134,11 +134,11 @@ export default function Home() {
 
 
       {depositAmount > 0 && (
-        <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
-          <p className="text-sm text-center">
+        <div className="p-3 md:p-4 rounded-lg bg-primary/10 border border-primary/20">
+          <p className="text-xs md:text-sm text-center">
             💰 <span className="font-semibold">{t('profitPercentageToday')}</span> {(dailyEarningMultiplier * 100).toFixed(1)}% {t('fromYourDeposit')}
           </p>
-          <p className="text-xs text-center text-muted-foreground mt-1">
+          <p className="text-[10px] md:text-xs text-center text-muted-foreground mt-1">
             {t('profitChangesDaily')}
           </p>
         </div>

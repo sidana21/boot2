@@ -72,43 +72,43 @@ export default function Transactions() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="p-3 rounded-full bg-primary/10 pulse-soft">
-          <History className="w-6 h-6 text-primary" />
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex items-center gap-2 md:gap-3">
+        <div className="p-2 md:p-3 rounded-full bg-primary/10 pulse-soft">
+          <History className="w-5 h-5 md:w-6 md:h-6 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">{t('transactionsTitle')}</h1>
-          <p className="text-sm text-muted-foreground">{t('allTransactionsHistory')}</p>
+          <h1 className="text-xl md:text-2xl font-bold">{t('transactionsTitle')}</h1>
+          <p className="text-xs md:text-sm text-muted-foreground">{t('allTransactionsHistory')}</p>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        <Card className="p-4 bg-gradient-to-br from-primary/10 to-background">
-          <p className="text-sm text-muted-foreground mb-1">{t('totalEarnings')}</p>
-          <p className="text-3xl font-bold text-primary tabular-nums">+{totalEarned.toFixed(2)} {t('usdt')}</p>
+      <div className="grid md:grid-cols-2 gap-3 md:gap-4">
+        <Card className="p-3 md:p-4 bg-gradient-to-br from-primary/10 to-background">
+          <p className="text-xs md:text-sm text-muted-foreground mb-1">{t('totalEarnings')}</p>
+          <p className="text-2xl md:text-3xl font-bold text-primary tabular-nums">+{totalEarned.toFixed(2)} {t('usdt')}</p>
         </Card>
 
-        <Card className="p-4 bg-gradient-to-br from-accent/10 to-background">
-          <p className="text-sm text-muted-foreground mb-1">{t('totalDeposits')}</p>
-          <p className="text-3xl font-bold text-accent tabular-nums">{totalDeposited.toFixed(2)} {t('usdt')}</p>
+        <Card className="p-3 md:p-4 bg-gradient-to-br from-accent/10 to-background">
+          <p className="text-xs md:text-sm text-muted-foreground mb-1">{t('totalDeposits')}</p>
+          <p className="text-2xl md:text-3xl font-bold text-accent tabular-nums">{totalDeposited.toFixed(2)} {t('usdt')}</p>
         </Card>
       </div>
 
       <Tabs value={filter} onValueChange={(v) => setFilter(v as any)} dir="rtl">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="all" data-testid="filter-all" className="pulse-soft">{t('allTransactions')}</TabsTrigger>
-          <TabsTrigger value="tap" data-testid="filter-tap">
-            <MousePointer2 className="w-4 h-4" />
+        <TabsList className="grid w-full grid-cols-5 h-auto">
+          <TabsTrigger value="all" data-testid="filter-all" className="pulse-soft text-xs md:text-sm px-1 md:px-3">{t('allTransactions')}</TabsTrigger>
+          <TabsTrigger value="tap" data-testid="filter-tap" className="px-1 md:px-3">
+            <MousePointer2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
           </TabsTrigger>
-          <TabsTrigger value="referral" data-testid="filter-referral">
-            <Users className="w-4 h-4" />
+          <TabsTrigger value="referral" data-testid="filter-referral" className="px-1 md:px-3">
+            <Users className="w-3.5 h-3.5 md:w-4 md:h-4" />
           </TabsTrigger>
-          <TabsTrigger value="deposit" data-testid="filter-deposit">
-            <ArrowDownToLine className="w-4 h-4" />
+          <TabsTrigger value="deposit" data-testid="filter-deposit" className="px-1 md:px-3">
+            <ArrowDownToLine className="w-3.5 h-3.5 md:w-4 md:h-4" />
           </TabsTrigger>
-          <TabsTrigger value="withdraw" data-testid="filter-withdraw">
-            <ArrowUpFromLine className="w-4 h-4" />
+          <TabsTrigger value="withdraw" data-testid="filter-withdraw" className="px-1 md:px-3">
+            <ArrowUpFromLine className="w-3.5 h-3.5 md:w-4 md:h-4" />
           </TabsTrigger>
         </TabsList>
       </Tabs>
