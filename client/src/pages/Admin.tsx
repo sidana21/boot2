@@ -60,7 +60,7 @@ export default function Admin() {
 
   const updateDepositMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const res = await apiRequest("PATCH", `/api/deposits/${id}`, { status, confirmedAt: new Date() });
+      const res = await apiRequest("PATCH", `/api/deposits/${id}`, { status });
       return res.json();
     },
     onSuccess: (_, variables) => {
@@ -77,8 +77,7 @@ export default function Admin() {
     mutationFn: async ({ id, status, txHash }: { id: string; status: string; txHash?: string }) => {
       return apiRequest("PATCH", `/api/withdrawals/${id}`, { 
         status, 
-        txHash,
-        processedAt: new Date() 
+        txHash
       });
     },
     onSuccess: () => {
