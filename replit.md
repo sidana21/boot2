@@ -6,6 +6,17 @@ This is a gamified Arabic-language USDT earning platform built as a tap-to-earn 
 
 The platform is designed with a mobile-first RTL (Right-to-Left) Arabic layout, inspired by modern crypto platforms like Binance and Coinbase, combined with gamification elements common in Telegram mini-apps.
 
+## Recent Changes
+
+### January 2025 - Production Deployment Fixes
+- **Session Management Upgrade**: Migrated from MemoryStore to PostgreSQL-backed session storage using `connect-pg-simple`
+  - Fixes session loss issues when deploying to Render or other cloud platforms
+  - Sessions now persist across server restarts
+  - Supports horizontal scaling with multiple server instances
+- **Proxy Configuration**: Added trust proxy setting for production environments
+  - Ensures secure cookies work correctly behind reverse proxies (Render, Heroku, etc.)
+  - Required for HTTPS deployments
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -93,10 +104,15 @@ Preferred communication style: Simple, everyday language.
 - TypeScript for type safety across frontend and backend
 - ESBuild for production builds
 
+**Session Management:**
+- Production-ready session storage using `connect-pg-simple` with PostgreSQL
+- Sessions persist across server restarts and scale horizontally
+- Automatic session table creation in database
+- Secure cookie configuration with proxy trust for deployment platforms (Render, etc.)
+
 **Planned Integrations (Not Yet Implemented):**
 - Binance API for cryptocurrency operations (API key configuration visible in admin panel)
 - USDT TRC20 network integration for deposits/withdrawals
-- Session management via `connect-pg-simple` for PostgreSQL-backed sessions
 
 **Key Architectural Decisions:**
 

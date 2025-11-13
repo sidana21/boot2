@@ -1,10 +1,16 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import passport from "./auth";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { pool } from "./db";
 
 const app = express();
+
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 
 declare module 'http' {
   interface IncomingMessage {
@@ -18,7 +24,13 @@ app.use(express.json({
 }));
 app.use(express.urlencoded({ extended: false }));
 
+const PgStore = connectPgSimple(session);
+
 app.use(session({
+  store: new PgStore({
+    pool: pool,
+    createTableIfMissing: true,
+  }),
   secret: process.env.SESSION_SECRET || "rtc-trading-secret-key-change-in-production",
   resave: false,
   saveUninitialized: false,
