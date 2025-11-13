@@ -3,10 +3,13 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowDownToLine, ArrowUpFromLine, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import type { InsertWithdrawal } from "@shared/schema";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface DepositWithdrawFormProps {
   currentBalance: number;
@@ -23,39 +26,47 @@ export default function DepositWithdrawForm({
 }: DepositWithdrawFormProps) {
   const { t } = useLanguage();
   const { toast } = useToast();
-  const [depositAmount, setDepositAmount] = useState("");
-  const [depositAddress, setDepositAddress] = useState("");
+  const { user } = useAuth();
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [withdrawAddress, setWithdrawAddress] = useState("");
 
-  const handleDeposit = () => {
-    const amount = parseFloat(depositAmount);
-    if (!amount || amount < minDeposit) {
+  const createWithdrawalMutation = useMutation({
+    mutationFn: async (withdrawalData: InsertWithdrawal) => {
+      const res = await apiRequest("POST", "/api/withdrawals", withdrawalData);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/withdrawals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/current-user"] });
+      setWithdrawAmount("");
+      setWithdrawAddress("");
+      toast({
+        title: t('withdrawRequest'),
+        description: "تم إرسال طلب السحب بنجاح. سيتم المعالجة خلال 24-48 ساعة",
+      });
+    },
+    onError: (error: any) => {
       toast({
         title: t('error'),
-        description: t('minimumDeposit', { min: minDeposit.toString() }),
+        description: error.message || "فشل في إرسال طلب السحب",
         variant: "destructive",
       });
-      return;
-    }
-    if (!depositAddress) {
-      toast({
-        title: t('error'),
-        description: t('enterWalletAddress'),
-        variant: "destructive",
-      });
-      return;
-    }
-    console.log('Deposit:', { amount, address: depositAddress });
-    toast({
-      title: t('depositRequest'),
-      description: t('depositRequestSent', { amount: amount.toString() }),
-    });
-  };
+    },
+  });
 
   const handleWithdraw = () => {
+    if (!user) {
+      toast({
+        title: t('error'),
+        description: t('loadUserDataFailed'),
+        variant: "destructive",
+      });
+      return;
+    }
+
     const amount = parseFloat(withdrawAmount);
-    if (!amount || amount < minWithdraw) {
+    
+    if (!withdrawAmount || isNaN(amount) || amount < minWithdraw) {
       toast({
         title: t('error'),
         description: t('minimumWithdraw', { min: minWithdraw.toString() }),
@@ -63,6 +74,7 @@ export default function DepositWithdrawForm({
       });
       return;
     }
+    
     if (amount > currentBalance) {
       toast({
         title: t('error'),
@@ -71,6 +83,7 @@ export default function DepositWithdrawForm({
       });
       return;
     }
+    
     if (!withdrawAddress) {
       toast({
         title: t('error'),
@@ -79,134 +92,86 @@ export default function DepositWithdrawForm({
       });
       return;
     }
-    console.log('Withdraw:', { amount, address: withdrawAddress });
-    toast({
-      title: t('withdrawRequest'),
-      description: t('withdrawRequestSent', { amount: amount.toString() }),
-    });
+
+    const withdrawalData: InsertWithdrawal = {
+      userId: user.id,
+      amount: withdrawAmount,
+      address: withdrawAddress,
+      status: "pending",
+      network: "TRC20",
+      fee: withdrawFee.toString(),
+      txHash: null,
+    };
+
+    createWithdrawalMutation.mutate(withdrawalData);
   };
+
+  const canWithdraw = currentBalance >= minWithdraw;
 
   return (
     <Card className="p-6">
-      <Tabs defaultValue="deposit" dir="rtl">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="deposit" className="gap-2" data-testid="tab-deposit">
-            <ArrowDownToLine className="w-4 h-4" />
-            {t('deposit')}
-          </TabsTrigger>
-          <TabsTrigger value="withdraw" className="gap-2" data-testid="tab-withdraw">
-            <ArrowUpFromLine className="w-4 h-4" />
-            {t('withdraw')}
-          </TabsTrigger>
-        </TabsList>
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="withdraw-amount">المبلغ (USDT)</Label>
+          <Input
+            id="withdraw-amount"
+            type="number"
+            placeholder={`الحد الأدنى ${minWithdraw} USDT`}
+            value={withdrawAmount}
+            onChange={(e) => setWithdrawAmount(e.target.value)}
+            className="text-lg mt-2"
+            disabled={!canWithdraw || createWithdrawalMutation.isPending}
+            data-testid="input-withdraw-amount"
+          />
+          {withdrawAmount && (
+            <p className="text-sm text-muted-foreground mt-1">
+              رسوم السحب: {withdrawFee} USDT | ستستلم: {Math.max(0, parseFloat(withdrawAmount) - withdrawFee).toFixed(2)} USDT
+            </p>
+          )}
+        </div>
 
-        <TabsContent value="deposit" className="space-y-4 mt-6">
-          <div>
-            <Label htmlFor="deposit-amount">{t('amountLabel')}</Label>
-            <Input
-              id="deposit-amount"
-              type="number"
-              placeholder={`الحد الأدنى ${minDeposit} USDT`}
-              value={depositAmount}
-              onChange={(e) => setDepositAmount(e.target.value)}
-              className="text-lg mt-2"
-              data-testid="input-deposit-amount"
-            />
-          </div>
+        <div>
+          <Label htmlFor="withdraw-address">عنوان المحفظة (TRC20)</Label>
+          <Input
+            id="withdraw-address"
+            placeholder="T..."
+            value={withdrawAddress}
+            onChange={(e) => setWithdrawAddress(e.target.value)}
+            className="font-mono mt-2"
+            disabled={!canWithdraw || createWithdrawalMutation.isPending}
+            data-testid="input-withdraw-address"
+          />
+        </div>
 
-          <div>
-            <Label htmlFor="deposit-address">عنوان محفظتك (TRC20)</Label>
-            <Input
-              id="deposit-address"
-              placeholder="T..."
-              value={depositAddress}
-              onChange={(e) => setDepositAddress(e.target.value)}
-              className="font-mono mt-2"
-              data-testid="input-deposit-address"
-            />
-          </div>
-
-          <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
-            <div className="flex gap-2">
-              <Info className="w-5 h-5 text-accent shrink-0 mt-0.5" />
-              <div className="text-sm space-y-1">
-                <p className="font-semibold">معلومات الإيداع:</p>
-                <p>• الحد الأدنى: {minDeposit} USDT</p>
-                <p>• الشبكة: TRC20 (Tron)</p>
-                <p>• وقت التأكيد: 5-10 دقائق</p>
-              </div>
+        <div className="p-4 bg-destructive/10 rounded-lg border border-destructive/20">
+          <div className="flex gap-2">
+            <Info className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+            <div className="text-sm space-y-1">
+              <p className="font-semibold">شروط السحب:</p>
+              <p>• الحد الأدنى: {minWithdraw} USDT</p>
+              <p>• رسوم السحب: {withdrawFee} USDT</p>
+              <p>• وقت المعالجة: 24-48 ساعة</p>
+              <p>• تأكد من صحة عنوان المحفظة - العمليات لا يمكن إلغاؤها</p>
             </div>
           </div>
+        </div>
 
-          <Button 
-            onClick={handleDeposit} 
-            className="w-full"
-            size="lg"
-            data-testid="button-submit-deposit"
-          >
-            إيداع الآن
-          </Button>
-        </TabsContent>
+        <Button 
+          onClick={handleWithdraw}
+          className="w-full"
+          size="lg"
+          disabled={!canWithdraw || createWithdrawalMutation.isPending}
+          data-testid="button-submit-withdraw"
+        >
+          {createWithdrawalMutation.isPending ? t('processing') : 'سحب الآن'}
+        </Button>
 
-        <TabsContent value="withdraw" className="space-y-4 mt-6">
-          <div className="p-4 bg-muted rounded-lg mb-4">
-            <p className="text-sm text-muted-foreground">الرصيد المتاح</p>
-            <p className="text-2xl font-bold tabular-nums">{currentBalance.toFixed(2)} USDT</p>
-          </div>
-
-          <div>
-            <Label htmlFor="withdraw-amount">المبلغ (USDT)</Label>
-            <Input
-              id="withdraw-amount"
-              type="number"
-              placeholder={`الحد الأدنى ${minWithdraw} USDT`}
-              value={withdrawAmount}
-              onChange={(e) => setWithdrawAmount(e.target.value)}
-              className="text-lg mt-2"
-              data-testid="input-withdraw-amount"
-            />
-            {withdrawAmount && (
-              <p className="text-sm text-muted-foreground mt-1">
-                رسوم السحب: {withdrawFee} USDT | ستستلم: {Math.max(0, parseFloat(withdrawAmount) - withdrawFee).toFixed(2)} USDT
-              </p>
-            )}
-          </div>
-
-          <div>
-            <Label htmlFor="withdraw-address">عنوان المحفظة (TRC20)</Label>
-            <Input
-              id="withdraw-address"
-              placeholder="T..."
-              value={withdrawAddress}
-              onChange={(e) => setWithdrawAddress(e.target.value)}
-              className="font-mono mt-2"
-              data-testid="input-withdraw-address"
-            />
-          </div>
-
-          <div className="p-4 bg-destructive/10 rounded-lg border border-destructive/20">
-            <div className="flex gap-2">
-              <Info className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
-              <div className="text-sm space-y-1">
-                <p className="font-semibold">شروط السحب:</p>
-                <p>• يجب إيداع {minDeposit} USDT أولاً لتفعيل السحب</p>
-                <p>• الحد الأدنى: {minWithdraw} USDT</p>
-                <p>• رسوم السحب: {withdrawFee} USDT</p>
-                <p>• وقت المعالجة: 24-48 ساعة</p>
-              </div>
-            </div>
-          </div>
-
-          <Button 
-            onClick={handleWithdraw}
-            className="w-full"
-            size="lg"
-            data-testid="button-submit-withdraw"
-          >
-            سحب الآن
-          </Button>
-        </TabsContent>
-      </Tabs>
+        {!canWithdraw && (
+          <p className="text-sm text-center text-destructive">
+            {t('noBalanceToWithdraw')}
+          </p>
+        )}
+      </div>
     </Card>
   );
 }

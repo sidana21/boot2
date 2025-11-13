@@ -8,9 +8,10 @@ import { Copy, CheckCircle, AlertCircle, Clock, Shield, Wallet, ArrowDownToLine,
 interface DepositAddressProps {
   address: string;
   network?: string;
+  currency?: string;
 }
 
-export default function DepositAddress({ address, network = "TRC20" }: DepositAddressProps) {
+export default function DepositAddress({ address, network = "TRC20", currency = "USDT" }: DepositAddressProps) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
 
@@ -44,7 +45,7 @@ export default function DepositAddress({ address, network = "TRC20" }: DepositAd
 
       <div className="space-y-4">
         <div className="p-4 rounded-lg bg-muted/50 border border-accent/20">
-          <p className="text-sm text-muted-foreground mb-2 text-center">عنوان محفظة USDT</p>
+          <p className="text-sm text-muted-foreground mb-2 text-center">عنوان محفظة {currency}</p>
           <div className="flex items-center gap-2">
             <code className="flex-1 text-sm bg-background p-3 rounded border break-all font-mono">
               {address}
@@ -80,7 +81,7 @@ export default function DepositAddress({ address, network = "TRC20" }: DepositAd
             </li>
             <li className="flex gap-2">
               <span className="font-bold text-primary">3.</span>
-              <span>اختر إرسال USDT عبر شبكة <strong>TRC20</strong></span>
+              <span>اختر إرسال {currency} عبر شبكة <strong>{network}</strong></span>
             </li>
             <li className="flex gap-2">
               <span className="font-bold text-primary">4.</span>
@@ -88,7 +89,7 @@ export default function DepositAddress({ address, network = "TRC20" }: DepositAd
             </li>
             <li className="flex gap-2">
               <span className="font-bold text-primary">5.</span>
-              <span>انتظر التأكيد (عادة 1-5 دقائق)</span>
+              <span>انتظر التأكيد (عادة {network === "TRC20" ? "1-5" : "5-15"} دقائق)</span>
             </li>
           </ol>
         </div>
@@ -101,7 +102,7 @@ export default function DepositAddress({ address, network = "TRC20" }: DepositAd
           <ul className="space-y-2 text-xs text-muted-foreground">
             <li className="flex items-start gap-2">
               <AlertTriangle className="w-3 h-3 text-destructive flex-shrink-0 mt-0.5" />
-              <span>استخدم شبكة <strong>TRC20</strong> فقط - أي شبكة أخرى ستؤدي لفقدان أموالك</span>
+              <span>استخدم شبكة <strong>{network}</strong> فقط - أي شبكة أخرى ستؤدي لفقدان أموالك</span>
             </li>
             <li className="flex items-start gap-2">
               <AlertTriangle className="w-3 h-3 text-destructive flex-shrink-0 mt-0.5" />
@@ -109,11 +110,11 @@ export default function DepositAddress({ address, network = "TRC20" }: DepositAd
             </li>
             <li className="flex items-start gap-2">
               <AlertTriangle className="w-3 h-3 text-destructive flex-shrink-0 mt-0.5" />
-              <span>الحد الأدنى للإيداع: 5 USDT</span>
+              <span>الحد الأدنى للإيداع: 5 {currency}</span>
             </li>
             <li className="flex items-start gap-2">
               <AlertTriangle className="w-3 h-3 text-destructive flex-shrink-0 mt-0.5" />
-              <span>لا ترسل عملات أخرى غير USDT لهذا العنوان</span>
+              <span>لا ترسل عملات أخرى غير {currency} لهذا العنوان</span>
             </li>
           </ul>
         </div>

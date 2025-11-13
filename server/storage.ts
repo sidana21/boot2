@@ -73,6 +73,12 @@ export class MemStorage implements IStorage {
       value: "TXYZexampleAddressForUSDTDeposits12345",
       updatedAt: new Date(),
     });
+    this.settings.set("eth_deposit_address", {
+      id: randomUUID(),
+      key: "eth_deposit_address",
+      value: "0xExampleETHAddressForDeposits123456789",
+      updatedAt: new Date(),
+    });
     this.settings.set("binance_api_key", {
       id: randomUUID(),
       key: "binance_api_key",

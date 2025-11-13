@@ -25,6 +25,7 @@ import type { Deposit, Withdrawal, SystemSetting } from "@shared/schema";
 export default function Admin() {
   const { toast } = useToast();
   const [depositAddress, setDepositAddress] = useState("");
+  const [ethDepositAddress, setEthDepositAddress] = useState("");
   const [binanceApiKey, setBinanceApiKey] = useState("");
   const [binanceApiSecret, setBinanceApiSecret] = useState("");
   
@@ -105,6 +106,9 @@ export default function Admin() {
   const handleSaveSettings = () => {
     if (depositAddress) {
       updateSettingMutation.mutate({ key: "deposit_address", value: depositAddress });
+    }
+    if (ethDepositAddress) {
+      updateSettingMutation.mutate({ key: "eth_deposit_address", value: ethDepositAddress });
     }
     if (binanceApiKey) {
       updateSettingMutation.mutate({ key: "binance_api_key", value: binanceApiKey });
@@ -655,7 +659,23 @@ export default function Admin() {
                   data-testid="input-deposit-address"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  سيتم عرض هذا العنوان للمستخدمين عند طلب الإيداع
+                  سيتم عرض هذا العنوان للمستخدمين عند اختيار الإيداع بـ USDT
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="eth-deposit-address">عنوان إيداع ETH (Ethereum)</Label>
+                <Input
+                  id="eth-deposit-address"
+                  type="text"
+                  value={ethDepositAddress || settings.find(s => s.key === "eth_deposit_address")?.value || ""}
+                  onChange={(e) => setEthDepositAddress(e.target.value)}
+                  placeholder="0xExampleAddress..."
+                  className="mt-2"
+                  data-testid="input-eth-deposit-address"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  سيتم عرض هذا العنوان للمستخدمين عند اختيار الإيداع بـ ETH
                 </p>
               </div>
 
