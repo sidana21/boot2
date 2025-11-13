@@ -1,20 +1,18 @@
-import { Bell, Menu, Wallet, Shield, LogOut } from "lucide-react";
+import { Bell, Menu, Wallet, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ThemeToggle from "@/components/ThemeToggle";
 import LanguageToggle from "@/components/LanguageToggle";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { Link } from "wouter";
 
 interface AppHeaderProps {
   onMenuClick?: () => void;
   notificationCount?: number;
   balance: number;
-  isAdmin?: boolean;
 }
 
-export default function AppHeader({ onMenuClick, notificationCount = 0, balance, isAdmin = true }: AppHeaderProps) {
+export default function AppHeader({ onMenuClick, notificationCount = 0, balance }: AppHeaderProps) {
   const { t } = useLanguage();
   const { logout } = useAuth();
   
@@ -44,19 +42,6 @@ export default function AppHeader({ onMenuClick, notificationCount = 0, balance,
             <span className="text-sm font-semibold tabular-nums">{balance.toFixed(2)}</span>
             <span className="text-xs text-muted-foreground">{t('usdt')}</span>
           </div>
-          
-          {isAdmin && (
-            <Link href="/admin">
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="text-primary"
-                data-testid="button-admin"
-              >
-                <Shield className="w-5 h-5" />
-              </Button>
-            </Link>
-          )}
           
           <LanguageToggle />
           <ThemeToggle />
