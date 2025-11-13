@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import ThemeToggle from "@/components/ThemeToggle";
+import AnimatedCounter from "@/components/AnimatedCounter";
 import { 
   ArrowLeft,
   TrendingUp,
@@ -28,6 +29,18 @@ export default function Landing() {
     totalPaid: 1247850,
     activeToday: 8234,
   });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveStats(prev => ({
+        totalUsers: prev.totalUsers + Math.floor(Math.random() * 5) + 1,
+        totalPaid: prev.totalPaid + Math.floor(Math.random() * 100) + 50,
+        activeToday: Math.floor(Math.random() * 2000) + 8000,
+      }));
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const tiers = [
     { icon: '🥉', name: 'برونزي', deposit: '5-50', returns: '15%', color: 'from-orange-100 to-orange-50 dark:from-orange-950 dark:to-orange-900' },
@@ -145,19 +158,33 @@ export default function Landing() {
         <div className="grid md:grid-cols-3 gap-6 mb-12">
           <Card className="p-6 text-center bg-gradient-to-br from-primary/10 to-background hover-elevate">
             <div className="text-4xl font-bold text-primary mb-2 tabular-nums">
-              {activeStats.totalUsers.toLocaleString('ar-SA')}+
+              <AnimatedCounter 
+                end={activeStats.totalUsers} 
+                duration={1500}
+                suffix="+"
+                className="text-primary"
+              />
             </div>
             <p className="text-muted-foreground">مستخدم نشط</p>
           </Card>
           <Card className="p-6 text-center bg-gradient-to-br from-accent/10 to-background hover-elevate">
             <div className="text-4xl font-bold text-accent mb-2 tabular-nums">
-              ${activeStats.totalPaid.toLocaleString('ar-SA')}
+              <AnimatedCounter 
+                end={activeStats.totalPaid} 
+                duration={1500}
+                prefix="$"
+                className="text-accent"
+              />
             </div>
             <p className="text-muted-foreground">إجمالي الأرباح الموزعة</p>
           </Card>
           <Card className="p-6 text-center bg-gradient-to-br from-green-500/10 to-background hover-elevate">
             <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2 tabular-nums">
-              {activeStats.activeToday.toLocaleString('ar-SA')}
+              <AnimatedCounter 
+                end={activeStats.activeToday} 
+                duration={1500}
+                className="text-green-600 dark:text-green-400"
+              />
             </div>
             <p className="text-muted-foreground">مستخدم نشط اليوم</p>
           </Card>

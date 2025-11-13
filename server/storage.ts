@@ -16,6 +16,8 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
+  getUserStats(): Promise<{ totalUsers: number; activeUsers: number }>;
   
   createDeposit(deposit: InsertDeposit): Promise<Deposit>;
   getDeposit(id: string): Promise<Deposit | undefined>;
@@ -129,6 +131,20 @@ export class MemStorage implements IStorage {
     const updatedUser = { ...user, ...updates };
     this.users.set(id, updatedUser);
     return updatedUser;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
+  async getUserStats(): Promise<{ totalUsers: number; activeUsers: number }> {
+    const allUsers = Array.from(this.users.values());
+    const totalUsers = allUsers.length;
+    const activeUsers = allUsers.filter(user => 
+      parseFloat(user.usdtBalance) > 0 || parseFloat(user.depositAmount) > 0
+    ).length;
+    
+    return { totalUsers, activeUsers };
   }
 
   async createDeposit(insertDeposit: InsertDeposit): Promise<Deposit> {

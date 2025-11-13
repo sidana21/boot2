@@ -53,6 +53,10 @@ export default function Admin() {
     enabled: true,
   });
 
+  const { data: stats } = useQuery<{ totalUsers: number; activeUsers: number }>({
+    queryKey: ["/api/admin/stats"],
+  });
+
   const updateDepositMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const res = await apiRequest("PATCH", `/api/deposits/${id}`, { status, confirmedAt: new Date() });
@@ -125,6 +129,40 @@ export default function Admin() {
           <h1 className="text-2xl font-bold">لوحة تحكم الإدارة</h1>
           <p className="text-sm text-muted-foreground">إدارة الطلبات والإعدادات</p>
         </div>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-4 mb-4">
+        <Card className="p-4 bg-gradient-to-br from-primary/10 to-background">
+          <div className="flex items-center gap-2 mb-2">
+            <Users className="w-4 h-4 text-primary" />
+            <p className="text-sm text-muted-foreground">إجمالي المستخدمين</p>
+          </div>
+          <p className="text-3xl font-bold text-primary tabular-nums" data-testid="total-users-count">
+            {stats?.totalUsers || 0}
+          </p>
+        </Card>
+
+        <Card className="p-4 bg-gradient-to-br from-green-500/10 to-background">
+          <div className="flex items-center gap-2 mb-2">
+            <Users className="w-4 h-4 text-green-600 dark:text-green-400" />
+            <p className="text-sm text-muted-foreground">مستخدمون نشطون</p>
+          </div>
+          <p className="text-3xl font-bold text-green-600 dark:text-green-400 tabular-nums" data-testid="active-users-count">
+            {stats?.activeUsers || 0}
+          </p>
+        </Card>
+
+        <Card className="p-4 bg-gradient-to-br from-accent/10 to-background">
+          <div className="flex items-center gap-2 mb-2">
+            <Gift className="w-4 h-4 text-accent" />
+            <p className="text-sm text-muted-foreground">نسبة النشاط</p>
+          </div>
+          <p className="text-3xl font-bold text-accent tabular-nums" data-testid="active-percentage">
+            {stats && stats.totalUsers > 0 
+              ? Math.round((stats.activeUsers / stats.totalUsers) * 100)
+              : 0}%
+          </p>
+        </Card>
       </div>
 
       <div className="grid md:grid-cols-4 gap-4">
