@@ -36,36 +36,19 @@ export interface IStorage {
   getAllSettings(): Promise<SystemSetting[]>;
 }
 
-export const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000001";
-
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private deposits: Map<string, Deposit>;
   private withdrawals: Map<string, Withdrawal>;
   private settings: Map<string, SystemSetting>;
+  private adminEmails: Set<string>;
 
   constructor() {
     this.users = new Map();
     this.deposits = new Map();
     this.withdrawals = new Map();
     this.settings = new Map();
-    
-    const defaultUser: User = {
-      id: DEFAULT_USER_ID,
-      email: "demo@example.com",
-      username: "demo_user",
-      password: "hashed_password",
-      isAdmin: true,
-      usdtBalance: "25.50",
-      rtcBalance: "1000",
-      referralCode: "TAPDEMO123",
-      depositAmount: "20.00",
-      depositBonus: "0",
-      tradingVolume: "0",
-      bonusWithdrawable: "0",
-      firstDepositBonusUsed: false,
-    };
-    this.users.set(DEFAULT_USER_ID, defaultUser);
+    this.adminEmails = new Set(['abooh052@gmail.com']);
     
     this.settings.set("deposit_address", {
       id: randomUUID(),
@@ -112,11 +95,12 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
     const referralCode = `TAP${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+    const isAdmin = this.adminEmails.has(insertUser.email);
     const user: User = { 
       ...insertUser,
       id,
       username: null,
-      isAdmin: false,
+      isAdmin,
       usdtBalance: "0",
       rtcBalance: "0",
       referralCode,
@@ -186,6 +170,9 @@ export class MemStorage implements IStorage {
     if (!deposit) return undefined;
     
     const updatedDeposit = { ...deposit, ...updates };
+    if (updates.status === "confirmed") {
+      updatedDeposit.confirmedAt = new Date();
+    }
     this.deposits.set(id, updatedDeposit);
     return updatedDeposit;
   }
@@ -225,6 +212,9 @@ export class MemStorage implements IStorage {
     if (!withdrawal) return undefined;
     
     const updatedWithdrawal = { ...withdrawal, ...updates };
+    if (updates.status === "completed") {
+      updatedWithdrawal.processedAt = new Date();
+    }
     this.withdrawals.set(id, updatedWithdrawal);
     return updatedWithdrawal;
   }
