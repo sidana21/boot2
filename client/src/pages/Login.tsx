@@ -6,6 +6,7 @@ import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Card,
   CardContent,
@@ -26,16 +27,20 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 
-const loginSchema = z.object({
-  email: z.string().email("البريد الإلكتروني غير صالح"),
-  password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
-});
-
-type LoginForm = z.infer<typeof loginSchema>;
+type LoginForm = {
+  email: string;
+  password: string;
+};
 
 export default function Login() {
+  const { t } = useLanguage();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  
+  const loginSchema = z.object({
+    email: z.string().email(t('invalidEmail')),
+    password: z.string().min(6, t('passwordMinLength')),
+  });
   
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -56,22 +61,22 @@ export default function Login() {
       });
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "فشل تسجيل الدخول");
+        throw new Error(error.error || t('loginFailed'));
       }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
-        title: "نجح تسجيل الدخول",
-        description: "مرحباً بك!",
+        title: t('loginSuccess'),
+        description: t('welcome'),
       });
       setLocation("/");
     },
     onError: (error: any) => {
       toast({
-        title: "خطأ",
-        description: error.message || "فشل تسجيل الدخول",
+        title: t('error'),
+        description: error.message || t('loginFailed'),
         variant: "destructive",
       });
     },
@@ -85,9 +90,9 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">تسجيل الدخول</CardTitle>
+          <CardTitle className="text-2xl">{t('loginTitle')}</CardTitle>
           <CardDescription>
-            أدخل بريدك الإلكتروني وكلمة المرور للوصول إلى حسابك
+            {t('loginDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -98,7 +103,7 @@ export default function Login() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>البريد الإلكتروني</FormLabel>
+                    <FormLabel>{t('emailLabel')}</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
@@ -116,7 +121,7 @@ export default function Login() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>كلمة المرور</FormLabel>
+                    <FormLabel>{t('passwordLabel')}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
@@ -135,16 +140,16 @@ export default function Login() {
                 disabled={loginMutation.isPending}
                 data-testid="button-login"
               >
-                {loginMutation.isPending ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+                {loginMutation.isPending ? t('loggingIn') : t('loginButton')}
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-2 text-center text-sm">
           <div>
-            ليس لديك حساب؟{" "}
+            {t('noAccount')}{" "}
             <Link href="/register" className="text-primary hover:underline" data-testid="link-register">
-              إنشاء حساب جديد
+              {t('createNewAccount')}
             </Link>
           </div>
         </CardFooter>

@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { History, MousePointer2, ArrowDownToLine, ArrowUpFromLine, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Transaction {
   id: string;
@@ -17,6 +18,7 @@ interface Transaction {
 }
 
 export default function Transactions() {
+  const { t } = useLanguage();
   const [filter, setFilter] = useState<'all' | TransactionType>('all');
 
   const { data: user, isLoading: userLoading } = useQuery<User>({
@@ -76,26 +78,26 @@ export default function Transactions() {
           <History className="w-6 h-6 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">المعاملات</h1>
-          <p className="text-sm text-muted-foreground">سجل جميع المعاملات</p>
+          <h1 className="text-2xl font-bold">{t('transactionsTitle')}</h1>
+          <p className="text-sm text-muted-foreground">{t('allTransactionsHistory')}</p>
         </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
         <Card className="p-4 bg-gradient-to-br from-primary/10 to-background">
-          <p className="text-sm text-muted-foreground mb-1">إجمالي الأرباح</p>
-          <p className="text-3xl font-bold text-primary tabular-nums">+{totalEarned.toFixed(2)} USDT</p>
+          <p className="text-sm text-muted-foreground mb-1">{t('totalEarnings')}</p>
+          <p className="text-3xl font-bold text-primary tabular-nums">+{totalEarned.toFixed(2)} {t('usdt')}</p>
         </Card>
 
         <Card className="p-4 bg-gradient-to-br from-accent/10 to-background">
-          <p className="text-sm text-muted-foreground mb-1">إجمالي الإيداعات</p>
-          <p className="text-3xl font-bold text-accent tabular-nums">{totalDeposited.toFixed(2)} USDT</p>
+          <p className="text-sm text-muted-foreground mb-1">{t('totalDeposits')}</p>
+          <p className="text-3xl font-bold text-accent tabular-nums">{totalDeposited.toFixed(2)} {t('usdt')}</p>
         </Card>
       </div>
 
       <Tabs value={filter} onValueChange={(v) => setFilter(v as any)} dir="rtl">
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="all" data-testid="filter-all" className="pulse-soft">الكل</TabsTrigger>
+          <TabsTrigger value="all" data-testid="filter-all" className="pulse-soft">{t('allTransactions')}</TabsTrigger>
           <TabsTrigger value="tap" data-testid="filter-tap">
             <MousePointer2 className="w-4 h-4" />
           </TabsTrigger>
@@ -119,7 +121,7 @@ export default function Transactions() {
         ) : (
           <div className="text-center py-12 text-muted-foreground">
             <History className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p>لا توجد معاملات</p>
+            <p>{t('noTransactions')}</p>
           </div>
         )}
       </div>

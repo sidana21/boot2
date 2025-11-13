@@ -12,8 +12,10 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Wallet as WalletIcon, TrendingUp, ArrowDownToLine, ArrowUpFromLine, Sparkles, Coins, Gift, TrendingUpIcon, Zap } from "lucide-react";
 import type { SystemSetting, Deposit, InsertDeposit, User } from "@shared/schema";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Wallet() {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [showVerificationTimer, setShowVerificationTimer] = useState(false);
   const [currentDepositId, setCurrentDepositId] = useState<string | null>(null);
@@ -44,14 +46,14 @@ export default function Wallet() {
       setCurrentDepositId(newDeposit.id);
       setShowVerificationTimer(true);
       toast({
-        title: "بدء التحقق",
-        description: "سيتم التحقق من إيداعك تلقائياً",
+        title: t('verificationStarted'),
+        description: t('verificationAutomatic'),
       });
     },
     onError: () => {
       toast({
-        title: "خطأ",
-        description: "فشل في بدء عملية التحقق",
+        title: t('error'),
+        description: t('verificationFailed'),
         variant: "destructive",
       });
     },
@@ -60,8 +62,8 @@ export default function Wallet() {
   const handleStartVerification = () => {
     if (!currentUser) {
       toast({
-        title: "خطأ",
-        description: "فشل تحميل بيانات المستخدم",
+        title: t('error'),
+        description: t('loadUserDataFailed'),
         variant: "destructive",
       });
       return;
@@ -71,8 +73,8 @@ export default function Wallet() {
     
     if (!depositAmount || isNaN(amount) || amount < 5) {
       toast({
-        title: "خطأ",
-        description: "يرجى إدخال مبلغ صحيح (الحد الأدنى 5 USDT)",
+        title: t('error'),
+        description: t('minimumDeposit', { min: '5' }),
         variant: "destructive",
       });
       return;
@@ -95,8 +97,8 @@ export default function Wallet() {
           <WalletIcon className="w-6 h-6 text-accent" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">المحفظة</h1>
-          <p className="text-sm text-muted-foreground">إدارة رصيدك</p>
+          <h1 className="text-2xl font-bold">{t('walletTitle')}</h1>
+          <p className="text-sm text-muted-foreground">{t('manageBalance')}</p>
         </div>
       </div>
 
@@ -104,16 +106,16 @@ export default function Wallet() {
         <Card className="p-4 bg-gradient-to-br from-primary/10 to-background">
           <div className="flex items-center gap-2 mb-2">
             <WalletIcon className="w-4 h-4 text-primary" />
-            <p className="text-sm text-muted-foreground">رصيد USDT</p>
+            <p className="text-sm text-muted-foreground">{t('usdtBalanceLabel')}</p>
           </div>
           <p className="text-3xl font-bold tabular-nums text-primary">{currentBalanceUSDT.toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">USDT</p>
+          <p className="text-xs text-muted-foreground mt-1">{t('usdt')}</p>
         </Card>
 
         <Card className="p-4 bg-gradient-to-br from-secondary/10 to-background">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-4 h-4 text-secondary" />
-            <p className="text-sm text-muted-foreground">رصيد RTC</p>
+            <p className="text-sm text-muted-foreground">{t('rtcBalanceLabel')}</p>
           </div>
           <p className="text-3xl font-bold tabular-nums text-secondary">{currentBalanceRTC.toFixed(0)}</p>
           <p className="text-xs text-muted-foreground mt-1">RTC Coin</p>
@@ -122,19 +124,19 @@ export default function Wallet() {
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-2">
             <ArrowDownToLine className="w-4 h-4 text-accent" />
-            <p className="text-sm text-muted-foreground">إجمالي الإيداعات</p>
+            <p className="text-sm text-muted-foreground">{t('totalDeposits')}</p>
           </div>
           <p className="text-3xl font-bold text-accent tabular-nums">{totalDeposits.toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">USDT</p>
+          <p className="text-xs text-muted-foreground mt-1">{t('usdt')}</p>
         </Card>
 
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-2">
             <ArrowUpFromLine className="w-4 h-4 text-destructive" />
-            <p className="text-sm text-muted-foreground">إجمالي السحوبات</p>
+            <p className="text-sm text-muted-foreground">{t('totalWithdrawals')}</p>
           </div>
           <p className="text-3xl font-bold tabular-nums">{totalWithdrawals.toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">USDT</p>
+          <p className="text-xs text-muted-foreground mt-1">{t('usdt')}</p>
         </Card>
       </div>
 
@@ -142,11 +144,11 @@ export default function Wallet() {
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="deposit" data-testid="tab-deposit-address">
             <ArrowDownToLine className="w-4 h-4 ml-2" />
-            إيداع
+            {t('deposit')}
           </TabsTrigger>
           <TabsTrigger value="withdraw" data-testid="tab-withdraw">
             <ArrowUpFromLine className="w-4 h-4 ml-2" />
-            سحب
+            {t('withdraw')}
           </TabsTrigger>
         </TabsList>
 
@@ -157,19 +159,19 @@ export default function Wallet() {
             <Card className="p-4">
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="deposit-amount">المبلغ المودع (USDT)</Label>
+                  <Label htmlFor="deposit-amount">{t('depositAmountLabel')}</Label>
                   <Input
                     id="deposit-amount"
                     type="number"
                     min="5"
                     step="0.01"
-                    placeholder="أدخل المبلغ الذي أرسلته"
+                    placeholder={t('enterDepositAmount')}
                     value={depositAmount}
                     onChange={(e) => setDepositAmount(e.target.value)}
                     data-testid="input-deposit-amount"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    الحد الأدنى: 5 USDT
+                    {t('minimumAmount', { min: '5' })}
                   </p>
                 </div>
                 <Button
@@ -178,7 +180,7 @@ export default function Wallet() {
                   disabled={createDepositMutation.isPending}
                   data-testid="button-start-verification"
                 >
-                  {createDepositMutation.isPending ? "جاري المعالجة..." : "قمت بالإرسال - تحقق من الإيداع"}
+                  {createDepositMutation.isPending ? t('processing') : t('iSentVerify')}
                 </Button>
               </div>
             </Card>
@@ -189,8 +191,8 @@ export default function Wallet() {
               depositId={currentDepositId}
               onVerificationComplete={() => {
                 toast({
-                  title: "تم التأكيد",
-                  description: "تمت إضافة الرصيد إلى محفظتك",
+                  title: t('verificationComplete'),
+                  description: t('balanceAdded'),
                 });
                 setShowVerificationTimer(false);
                 setCurrentDepositId(null);
@@ -212,24 +214,24 @@ export default function Wallet() {
       <Card className="p-4 bg-gradient-to-br from-secondary/10 via-primary/5 to-accent/10 border-2 border-secondary/30">
         <div className="flex items-center gap-2 mb-3">
           <Sparkles className="w-5 h-5 text-secondary pulse-soft" />
-          <h3 className="font-bold">ما هي عملة RTC؟</h3>
+          <h3 className="font-bold">{t('whatIsRTC')}</h3>
         </div>
         <div className="space-y-2 text-sm">
           <div className="flex items-start gap-2">
             <Coins className="w-4 h-4 text-secondary flex-shrink-0 mt-0.5" />
-            <p><span className="font-semibold">RTC (Replit Tap Coin)</span> هي عملة التكبيس الخاصة بك!</p>
+            <p><span className="font-semibold">RTC (Replit Tap Coin)</span> {t('rtcDescription')}</p>
           </div>
           <div className="flex items-start gap-2">
             <Zap className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
-            <p>تكسب 10 RTC مع كل تكبيسة</p>
+            <p>{t('rtcEarnRate')}</p>
           </div>
           <div className="flex items-start gap-2">
             <Gift className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-            <p>يمكن استبدال RTC بمكافآت ومزايا خاصة قريباً</p>
+            <p>{t('rtcRewards')}</p>
           </div>
           <div className="flex items-start gap-2">
             <TrendingUpIcon className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
-            <p>احفظ عملاتك لفرص قادمة مميزة!</p>
+            <p>{t('rtcSaveCoins')}</p>
           </div>
         </div>
       </Card>

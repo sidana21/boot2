@@ -11,8 +11,10 @@ import { Button } from "@/components/ui/button";
 import { ArrowDownToLine, ArrowUpFromLine, Users } from "lucide-react";
 import { useLocation } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Home() {
+  const { t } = useLanguage();
   const [, setLocation] = useLocation();
   const { data: user, isLoading } = useQuery<User>({
     queryKey: ['/api/current-user'],
@@ -88,7 +90,7 @@ export default function Home() {
           data-testid="button-goto-deposit"
         >
           <ArrowDownToLine className="w-5 h-5 text-accent" />
-          <span className="text-sm">إيداع</span>
+          <span className="text-sm">{t('deposit')}</span>
         </Button>
         <Button
           variant="outline"
@@ -97,7 +99,7 @@ export default function Home() {
           data-testid="button-goto-withdraw"
         >
           <ArrowUpFromLine className="w-5 h-5 text-destructive" />
-          <span className="text-sm">سحب</span>
+          <span className="text-sm">{t('withdraw')}</span>
         </Button>
         <Button
           variant="outline"
@@ -106,7 +108,7 @@ export default function Home() {
           data-testid="button-goto-referrals"
         >
           <Users className="w-5 h-5 text-primary" />
-          <span className="text-sm">دعوة</span>
+          <span className="text-sm">{t('invite')}</span>
         </Button>
       </div>
 
@@ -137,10 +139,10 @@ export default function Home() {
 
       <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
         <p className="text-sm text-center">
-          💰 <span className="font-semibold">نسبة الربح اليوم:</span> {(dailyEarningMultiplier * 100).toFixed(1)}% من إيداعك
+          💰 <span className="font-semibold">{t('profitPercentageToday')}</span> {(dailyEarningMultiplier * 100).toFixed(1)}% {t('fromYourDeposit')}
         </p>
         <p className="text-xs text-center text-muted-foreground mt-1">
-          الربح يتغير عشوائياً كل يوم (15-25%)
+          {t('profitChangesDaily')}
         </p>
       </div>
     </div>

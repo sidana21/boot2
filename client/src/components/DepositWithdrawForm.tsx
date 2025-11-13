@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowDownToLine, ArrowUpFromLine, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DepositWithdrawFormProps {
   currentBalance: number;
@@ -20,6 +21,7 @@ export default function DepositWithdrawForm({
   minWithdraw = 10,
   withdrawFee = 0.5
 }: DepositWithdrawFormProps) {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [depositAmount, setDepositAmount] = useState("");
   const [depositAddress, setDepositAddress] = useState("");
@@ -30,24 +32,24 @@ export default function DepositWithdrawForm({
     const amount = parseFloat(depositAmount);
     if (!amount || amount < minDeposit) {
       toast({
-        title: "خطأ",
-        description: `الحد الأدنى للإيداع ${minDeposit} USDT`,
+        title: t('error'),
+        description: t('minimumDeposit', { min: minDeposit.toString() }),
         variant: "destructive",
       });
       return;
     }
     if (!depositAddress) {
       toast({
-        title: "خطأ",
-        description: "يرجى إدخال عنوان المحفظة",
+        title: t('error'),
+        description: t('enterWalletAddress'),
         variant: "destructive",
       });
       return;
     }
     console.log('Deposit:', { amount, address: depositAddress });
     toast({
-      title: "طلب الإيداع",
-      description: `تم إرسال طلب إيداع ${amount} USDT`,
+      title: t('depositRequest'),
+      description: t('depositRequestSent', { amount: amount.toString() }),
     });
   };
 
@@ -55,32 +57,32 @@ export default function DepositWithdrawForm({
     const amount = parseFloat(withdrawAmount);
     if (!amount || amount < minWithdraw) {
       toast({
-        title: "خطأ",
-        description: `الحد الأدنى للسحب ${minWithdraw} USDT`,
+        title: t('error'),
+        description: t('minimumWithdraw', { min: minWithdraw.toString() }),
         variant: "destructive",
       });
       return;
     }
     if (amount > currentBalance) {
       toast({
-        title: "خطأ",
-        description: "رصيدك غير كافٍ",
+        title: t('error'),
+        description: t('insufficientBalance'),
         variant: "destructive",
       });
       return;
     }
     if (!withdrawAddress) {
       toast({
-        title: "خطأ",
-        description: "يرجى إدخال عنوان المحفظة",
+        title: t('error'),
+        description: t('enterWalletAddress'),
         variant: "destructive",
       });
       return;
     }
     console.log('Withdraw:', { amount, address: withdrawAddress });
     toast({
-      title: "طلب السحب",
-      description: `تم إرسال طلب سحب ${amount} USDT`,
+      title: t('withdrawRequest'),
+      description: t('withdrawRequestSent', { amount: amount.toString() }),
     });
   };
 
@@ -90,17 +92,17 @@ export default function DepositWithdrawForm({
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="deposit" className="gap-2" data-testid="tab-deposit">
             <ArrowDownToLine className="w-4 h-4" />
-            إيداع
+            {t('deposit')}
           </TabsTrigger>
           <TabsTrigger value="withdraw" className="gap-2" data-testid="tab-withdraw">
             <ArrowUpFromLine className="w-4 h-4" />
-            سحب
+            {t('withdraw')}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="deposit" className="space-y-4 mt-6">
           <div>
-            <Label htmlFor="deposit-amount">المبلغ (USDT)</Label>
+            <Label htmlFor="deposit-amount">{t('amountLabel')}</Label>
             <Input
               id="deposit-amount"
               type="number"
