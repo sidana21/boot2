@@ -12,7 +12,7 @@ export const users = pgTable("users", {
   usdtBalance: decimal("usdt_balance", { precision: 18, scale: 8 }).default("0").notNull(),
   rtcBalance: decimal("rtc_balance", { precision: 18, scale: 2 }).default("0").notNull(),
   referralCode: text("referral_code").unique(),
-  referredBy: varchar("referred_by").references(() => users.id),
+  referredBy: varchar("referred_by"),
   depositAmount: decimal("deposit_amount", { precision: 18, scale: 8 }).default("0").notNull(),
   depositBonus: decimal("deposit_bonus", { precision: 18, scale: 8 }).default("0").notNull(),
   tradingVolume: decimal("trading_volume", { precision: 18, scale: 8 }).default("0").notNull(),
@@ -20,12 +20,20 @@ export const users = pgTable("users", {
   firstDepositBonusUsed: boolean("first_deposit_bonus_used").default(false).notNull(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  email: true,
-  password: true,
-  referredBy: true,
-}).partial({
-  referredBy: true,
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  username: true,
+  isAdmin: true,
+  usdtBalance: true,
+  rtcBalance: true,
+  referralCode: true,
+  depositAmount: true,
+  depositBonus: true,
+  tradingVolume: true,
+  bonusWithdrawable: true,
+  firstDepositBonusUsed: true,
+}).extend({
+  referredBy: z.string().optional(),
 });
 
 export const loginSchema = z.object({
