@@ -19,10 +19,12 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByReferralCode(code: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
   getUserStats(): Promise<{ totalUsers: number; activeUsers: number }>;
+  getReferralsByUserId(userId: string): Promise<User[]>;
   
   createDeposit(deposit: InsertDeposit): Promise<Deposit>;
   getDeposit(id: string): Promise<Deposit | undefined>;
@@ -88,6 +90,11 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
+  async getUserByReferralCode(code: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.referralCode, code));
+    return user || undefined;
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const isAdmin = ADMIN_EMAILS.has(insertUser.email);
     const [user] = await db
@@ -121,6 +128,10 @@ export class DatabaseStorage implements IStorage {
     ).length;
     
     return { totalUsers, activeUsers };
+  }
+
+  async getReferralsByUserId(userId: string): Promise<User[]> {
+    return await db.select().from(users).where(eq(users.referredBy, userId));
   }
 
   async createDeposit(insertDeposit: InsertDeposit): Promise<Deposit> {

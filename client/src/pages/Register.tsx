@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,6 +40,15 @@ type RegisterForm = z.infer<typeof registerSchema>;
 export default function Register() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get('ref');
+    if (refCode) {
+      setReferralCode(refCode);
+    }
+  }, []);
   
   const form = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
@@ -57,6 +66,7 @@ export default function Register() {
         body: JSON.stringify({
           email: data.email,
           password: data.password,
+          referralCode: referralCode,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -96,6 +106,11 @@ export default function Register() {
           <CardTitle className="text-2xl">إنشاء حساب جديد</CardTitle>
           <CardDescription>
             أدخل بياناتك لإنشاء حساب جديد
+            {referralCode && (
+              <span className="block mt-2 text-primary font-semibold">
+                🎁 تم تطبيق كود الإحالة: {referralCode}
+              </span>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>

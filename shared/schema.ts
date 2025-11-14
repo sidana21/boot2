@@ -23,6 +23,9 @@ export const users = pgTable("users", {
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
   password: true,
+  referredBy: true,
+}).partial({
+  referredBy: true,
 });
 
 export const loginSchema = z.object({

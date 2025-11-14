@@ -37,9 +37,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const hashedPassword = await bcrypt.hash(validated.password, 10);
       
+      let referrerId = null;
+      if (req.body.referralCode) {
+        const referrer = await storage.getUserByReferralCode(req.body.referralCode);
+        if (referrer) {
+          referrerId = referrer.id;
+        }
+      }
+      
       const user = await storage.createUser({
         email: validated.email,
         password: hashedPassword,
+        referredBy: referrerId,
       });
 
       req.login(user, (err) => {
